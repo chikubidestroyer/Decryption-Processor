@@ -1,0 +1,266 @@
+#! /c/Source/iverilog-install/bin/vvp
+:ivl_version "12.0 (devel)" "(s20150603-1110-g18392a46)";
+:ivl_delay_selection "TYPICAL";
+:vpi_time_precision - 12;
+:vpi_module "C:\iverilog\lib\ivl\system.vpi";
+:vpi_module "C:\iverilog\lib\ivl\vhdl_sys.vpi";
+:vpi_module "C:\iverilog\lib\ivl\vhdl_textio.vpi";
+:vpi_module "C:\iverilog\lib\ivl\v2005_math.vpi";
+:vpi_module "C:\iverilog\lib\ivl\va_math.vpi";
+S_0000016c82478000 .scope module, "barrelshift_tb" "barrelshift_tb" 2 3;
+ .timescale -9 -12;
+v0000016c824dc310_0 .var "ctrl_shiftamt", 4 0;
+v0000016c824dcef0_0 .var "data_operandA", 31 0;
+v0000016c824dd7b0_0 .net "data_result", 31 0, L_0000016c824f0de0;  1 drivers
+v0000016c824dcc70_0 .var "shift", 0 0;
+S_0000016c82478190 .scope module, "uut" "barrelshift" 2 12, 3 1 0, S_0000016c82478000;
+ .timescale 0 0;
+    .port_info 0 /INPUT 32 "data_operandA";
+    .port_info 1 /INPUT 5 "ctrl_shiftamt";
+    .port_info 2 /INPUT 1 "shift";
+    .port_info 3 /OUTPUT 32 "data_result";
+v0000016c824dca90_0 .net "ctrl_shiftamt", 4 0, v0000016c824dc310_0;  1 drivers
+v0000016c824dc770_0 .net "data_operandA", 31 0, v0000016c824dcef0_0;  1 drivers
+v0000016c824dc590_0 .net "data_result", 31 0, L_0000016c824f0de0;  alias, 1 drivers
+v0000016c824dd990_0 .net "shift", 0 0, v0000016c824dcc70_0;  1 drivers
+v0000016c824dd2b0_0 .net "stage16", 31 0, L_0000016c824dd490;  1 drivers
+v0000016c824dd710_0 .net "stage2", 31 0, L_0000016c824f1e20;  1 drivers
+v0000016c824dcbd0_0 .net "stage4", 31 0, L_0000016c824f1600;  1 drivers
+v0000016c824dd350_0 .net "stage8", 31 0, L_0000016c824dc090;  1 drivers
+L_0000016c824dce50 .part v0000016c824dc310_0, 4, 1;
+L_0000016c824dc130 .part v0000016c824dc310_0, 3, 1;
+L_0000016c824f1560 .part v0000016c824dc310_0, 2, 1;
+L_0000016c824f1ce0 .part v0000016c824dc310_0, 1, 1;
+L_0000016c824f1740 .part v0000016c824dc310_0, 0, 1;
+S_0000016c82478320 .scope module, "level1" "onebitshifter" 3 41, 4 1 0, S_0000016c82478190;
+ .timescale -9 -12;
+    .port_info 0 /INPUT 32 "data_operandA";
+    .port_info 1 /OUTPUT 32 "data_result";
+    .port_info 2 /INPUT 1 "shift";
+    .port_info 3 /INPUT 1 "enable";
+v0000016c82463bd0_0 .net *"_ivl_1", 0 0, L_0000016c824f0b60;  1 drivers
+v0000016c824631d0_0 .net *"_ivl_10", 31 0, L_0000016c824f07a0;  1 drivers
+v0000016c82463310_0 .net *"_ivl_3", 30 0, L_0000016c824f0c00;  1 drivers
+v0000016c82464530_0 .net *"_ivl_4", 31 0, L_0000016c824f1d80;  1 drivers
+v0000016c824633b0_0 .net *"_ivl_7", 30 0, L_0000016c824f0200;  1 drivers
+L_0000016c825201f0 .functor BUFT 1, C4<0>, C4<0>, C4<0>, C4<0>;
+v0000016c82464210_0 .net/2u *"_ivl_8", 0 0, L_0000016c825201f0;  1 drivers
+v0000016c82462910_0 .net "afterShift", 31 0, L_0000016c824f0d40;  1 drivers
+v0000016c82463db0_0 .net "data_operandA", 31 0, L_0000016c824f1e20;  alias, 1 drivers
+v0000016c824643f0_0 .net "data_result", 31 0, L_0000016c824f0de0;  alias, 1 drivers
+v0000016c824640d0_0 .net "enable", 0 0, L_0000016c824f1740;  1 drivers
+v0000016c82463450_0 .net "shift", 0 0, v0000016c824dcc70_0;  alias, 1 drivers
+L_0000016c824f0b60 .part L_0000016c824f1e20, 31, 1;
+L_0000016c824f0c00 .part L_0000016c824f1e20, 1, 31;
+L_0000016c824f1d80 .concat [ 31 1 0 0], L_0000016c824f0c00, L_0000016c824f0b60;
+L_0000016c824f0200 .part L_0000016c824f1e20, 0, 31;
+L_0000016c824f07a0 .concat [ 1 31 0 0], L_0000016c825201f0, L_0000016c824f0200;
+L_0000016c824f0d40 .functor MUXZ 32, L_0000016c824f07a0, L_0000016c824f1d80, v0000016c824dcc70_0, C4<>;
+L_0000016c824f0de0 .functor MUXZ 32, L_0000016c824f1e20, L_0000016c824f0d40, L_0000016c824f1740, C4<>;
+S_0000016c82480800 .scope module, "level16" "sixteenbitshifter" 3 13, 5 1 0, S_0000016c82478190;
+ .timescale -9 -12;
+    .port_info 0 /INPUT 32 "data_operandA";
+    .port_info 1 /INPUT 1 "shift";
+    .port_info 2 /OUTPUT 32 "data_result";
+    .port_info 3 /INPUT 1 "enable";
+v0000016c82462a50_0 .net *"_ivl_1", 0 0, L_0000016c824dd850;  1 drivers
+L_0000016c82520088 .functor BUFT 1, C4<0000000000000000>, C4<0>, C4<0>, C4<0>;
+v0000016c82463e50_0 .net/2u *"_ivl_10", 15 0, L_0000016c82520088;  1 drivers
+v0000016c82463130_0 .net *"_ivl_12", 31 0, L_0000016c824ddad0;  1 drivers
+v0000016c82464170_0 .net *"_ivl_2", 15 0, L_0000016c824dda30;  1 drivers
+v0000016c824634f0_0 .net *"_ivl_5", 15 0, L_0000016c824dcdb0;  1 drivers
+v0000016c82463ef0_0 .net *"_ivl_6", 31 0, L_0000016c824dde90;  1 drivers
+v0000016c82464030_0 .net *"_ivl_9", 15 0, L_0000016c824dd3f0;  1 drivers
+v0000016c824638b0_0 .net "afterShift", 31 0, L_0000016c824ddf30;  1 drivers
+v0000016c82463090_0 .net "data_operandA", 31 0, v0000016c824dcef0_0;  alias, 1 drivers
+v0000016c82462ff0_0 .net "data_result", 31 0, L_0000016c824dd490;  alias, 1 drivers
+v0000016c82463c70_0 .net "enable", 0 0, L_0000016c824dce50;  1 drivers
+v0000016c82463590_0 .net "shift", 0 0, v0000016c824dcc70_0;  alias, 1 drivers
+L_0000016c824dd850 .part v0000016c824dcef0_0, 31, 1;
+LS_0000016c824dda30_0_0 .concat [ 1 1 1 1], L_0000016c824dd850, L_0000016c824dd850, L_0000016c824dd850, L_0000016c824dd850;
+LS_0000016c824dda30_0_4 .concat [ 1 1 1 1], L_0000016c824dd850, L_0000016c824dd850, L_0000016c824dd850, L_0000016c824dd850;
+LS_0000016c824dda30_0_8 .concat [ 1 1 1 1], L_0000016c824dd850, L_0000016c824dd850, L_0000016c824dd850, L_0000016c824dd850;
+LS_0000016c824dda30_0_12 .concat [ 1 1 1 1], L_0000016c824dd850, L_0000016c824dd850, L_0000016c824dd850, L_0000016c824dd850;
+L_0000016c824dda30 .concat [ 4 4 4 4], LS_0000016c824dda30_0_0, LS_0000016c824dda30_0_4, LS_0000016c824dda30_0_8, LS_0000016c824dda30_0_12;
+L_0000016c824dcdb0 .part v0000016c824dcef0_0, 16, 16;
+L_0000016c824dde90 .concat [ 16 16 0 0], L_0000016c824dcdb0, L_0000016c824dda30;
+L_0000016c824dd3f0 .part v0000016c824dcef0_0, 0, 16;
+L_0000016c824ddad0 .concat [ 16 16 0 0], L_0000016c82520088, L_0000016c824dd3f0;
+L_0000016c824ddf30 .functor MUXZ 32, L_0000016c824ddad0, L_0000016c824dde90, v0000016c824dcc70_0, C4<>;
+L_0000016c824dd490 .functor MUXZ 32, v0000016c824dcef0_0, L_0000016c824ddf30, L_0000016c824dce50, C4<>;
+S_0000016c8246fe60 .scope module, "level2" "twobitshifter" 3 34, 6 1 0, S_0000016c82478190;
+ .timescale -9 -12;
+    .port_info 0 /INPUT 32 "data_operandA";
+    .port_info 1 /INPUT 1 "shift";
+    .port_info 2 /OUTPUT 32 "data_result";
+    .port_info 3 /INPUT 1 "enable";
+v0000016c82463630_0 .net *"_ivl_1", 0 0, L_0000016c824f0700;  1 drivers
+L_0000016c82520160 .functor BUFT 1, C4<0>, C4<0>, C4<0>, C4<0>;
+v0000016c82464490_0 .net *"_ivl_11", 0 0, L_0000016c82520160;  1 drivers
+v0000016c824645d0_0 .net *"_ivl_13", 30 0, L_0000016c824f0980;  1 drivers
+L_0000016c825201a8 .functor BUFT 1, C4<00>, C4<0>, C4<0>, C4<0>;
+v0000016c82462af0_0 .net/2u *"_ivl_14", 1 0, L_0000016c825201a8;  1 drivers
+v0000016c82462730_0 .net *"_ivl_16", 32 0, L_0000016c824f1240;  1 drivers
+v0000016c82462f50_0 .net *"_ivl_18", 32 0, L_0000016c824f0340;  1 drivers
+v0000016c82462eb0_0 .net *"_ivl_3", 0 0, L_0000016c824f0ac0;  1 drivers
+v0000016c824636d0_0 .net *"_ivl_5", 29 0, L_0000016c824f0520;  1 drivers
+v0000016c82463770_0 .net *"_ivl_6", 31 0, L_0000016c824f0160;  1 drivers
+v0000016c82463810_0 .net *"_ivl_8", 32 0, L_0000016c824f11a0;  1 drivers
+v0000016c824627d0_0 .net "afterShift", 31 0, L_0000016c824f0a20;  1 drivers
+v0000016c82462b90_0 .net "data_operandA", 31 0, L_0000016c824f1600;  alias, 1 drivers
+v0000016c82462870_0 .net "data_result", 31 0, L_0000016c824f1e20;  alias, 1 drivers
+v0000016c82462c30_0 .net "enable", 0 0, L_0000016c824f1ce0;  1 drivers
+v0000016c82462cd0_0 .net "shift", 0 0, v0000016c824dcc70_0;  alias, 1 drivers
+L_0000016c824f0700 .part L_0000016c824f1600, 31, 1;
+L_0000016c824f0ac0 .part L_0000016c824f1600, 31, 1;
+L_0000016c824f0520 .part L_0000016c824f1600, 2, 30;
+L_0000016c824f0160 .concat [ 30 1 1 0], L_0000016c824f0520, L_0000016c824f0ac0, L_0000016c824f0700;
+L_0000016c824f11a0 .concat [ 32 1 0 0], L_0000016c824f0160, L_0000016c82520160;
+L_0000016c824f0980 .part L_0000016c824f1600, 0, 31;
+L_0000016c824f1240 .concat [ 2 31 0 0], L_0000016c825201a8, L_0000016c824f0980;
+L_0000016c824f0340 .functor MUXZ 33, L_0000016c824f1240, L_0000016c824f11a0, v0000016c824dcc70_0, C4<>;
+L_0000016c824f0a20 .part L_0000016c824f0340, 0, 32;
+L_0000016c824f1e20 .functor MUXZ 32, L_0000016c824f1600, L_0000016c824f0a20, L_0000016c824f1ce0, C4<>;
+S_0000016c8246fff0 .scope module, "level4" "fourbitshifter" 3 27, 7 1 0, S_0000016c82478190;
+ .timescale -9 -12;
+    .port_info 0 /INPUT 32 "data_operandA";
+    .port_info 1 /INPUT 1 "shift";
+    .port_info 2 /OUTPUT 32 "data_result";
+    .port_info 3 /INPUT 1 "enable";
+v0000016c82462d70_0 .net *"_ivl_1", 0 0, L_0000016c824dc270;  1 drivers
+L_0000016c82520118 .functor BUFT 1, C4<0000>, C4<0>, C4<0>, C4<0>;
+v0000016c82462e10_0 .net/2u *"_ivl_10", 3 0, L_0000016c82520118;  1 drivers
+v0000016c82463950_0 .net *"_ivl_12", 31 0, L_0000016c824f0ca0;  1 drivers
+v0000016c824639f0_0 .net *"_ivl_2", 3 0, L_0000016c824dc810;  1 drivers
+v0000016c82463a90_0 .net *"_ivl_5", 27 0, L_0000016c824f16a0;  1 drivers
+v0000016c82463b30_0 .net *"_ivl_6", 31 0, L_0000016c824f0840;  1 drivers
+v0000016c824dcd10_0 .net *"_ivl_9", 27 0, L_0000016c824f1b00;  1 drivers
+v0000016c824dd0d0_0 .net "afterShift", 31 0, L_0000016c824f0f20;  1 drivers
+v0000016c824dcf90_0 .net "data_operandA", 31 0, L_0000016c824dc090;  alias, 1 drivers
+v0000016c824dc450_0 .net "data_result", 31 0, L_0000016c824f1600;  alias, 1 drivers
+v0000016c824dd170_0 .net "enable", 0 0, L_0000016c824f1560;  1 drivers
+v0000016c824dc950_0 .net "shift", 0 0, v0000016c824dcc70_0;  alias, 1 drivers
+L_0000016c824dc270 .part L_0000016c824dc090, 31, 1;
+L_0000016c824dc810 .concat [ 1 1 1 1], L_0000016c824dc270, L_0000016c824dc270, L_0000016c824dc270, L_0000016c824dc270;
+L_0000016c824f16a0 .part L_0000016c824dc090, 4, 28;
+L_0000016c824f0840 .concat [ 28 4 0 0], L_0000016c824f16a0, L_0000016c824dc810;
+L_0000016c824f1b00 .part L_0000016c824dc090, 0, 28;
+L_0000016c824f0ca0 .concat [ 4 28 0 0], L_0000016c82520118, L_0000016c824f1b00;
+L_0000016c824f0f20 .functor MUXZ 32, L_0000016c824f0ca0, L_0000016c824f0840, v0000016c824dcc70_0, C4<>;
+L_0000016c824f1600 .functor MUXZ 32, L_0000016c824dc090, L_0000016c824f0f20, L_0000016c824f1560, C4<>;
+S_0000016c82470180 .scope module, "level8" "eightbitshifter" 3 20, 8 1 0, S_0000016c82478190;
+ .timescale -9 -12;
+    .port_info 0 /INPUT 32 "data_operandA";
+    .port_info 1 /INPUT 1 "shift";
+    .port_info 2 /OUTPUT 32 "data_result";
+    .port_info 3 /INPUT 1 "enable";
+v0000016c824dcb30_0 .net *"_ivl_1", 0 0, L_0000016c824dc3b0;  1 drivers
+L_0000016c825200d0 .functor BUFT 1, C4<00000000>, C4<0>, C4<0>, C4<0>;
+v0000016c824dc9f0_0 .net/2u *"_ivl_10", 7 0, L_0000016c825200d0;  1 drivers
+v0000016c824dd030_0 .net *"_ivl_12", 31 0, L_0000016c824ddd50;  1 drivers
+v0000016c824dd8f0_0 .net *"_ivl_2", 7 0, L_0000016c824ddb70;  1 drivers
+v0000016c824dc4f0_0 .net *"_ivl_5", 23 0, L_0000016c824ddc10;  1 drivers
+v0000016c824dc6d0_0 .net *"_ivl_6", 31 0, L_0000016c824ddcb0;  1 drivers
+v0000016c824dc8b0_0 .net *"_ivl_9", 23 0, L_0000016c824dc630;  1 drivers
+v0000016c824dc1d0_0 .net "afterShift", 31 0, L_0000016c824dddf0;  1 drivers
+v0000016c824dd5d0_0 .net "data_operandA", 31 0, L_0000016c824dd490;  alias, 1 drivers
+v0000016c824dd670_0 .net "data_result", 31 0, L_0000016c824dc090;  alias, 1 drivers
+v0000016c824dd210_0 .net "enable", 0 0, L_0000016c824dc130;  1 drivers
+v0000016c824dd530_0 .net "shift", 0 0, v0000016c824dcc70_0;  alias, 1 drivers
+L_0000016c824dc3b0 .part L_0000016c824dd490, 31, 1;
+LS_0000016c824ddb70_0_0 .concat [ 1 1 1 1], L_0000016c824dc3b0, L_0000016c824dc3b0, L_0000016c824dc3b0, L_0000016c824dc3b0;
+LS_0000016c824ddb70_0_4 .concat [ 1 1 1 1], L_0000016c824dc3b0, L_0000016c824dc3b0, L_0000016c824dc3b0, L_0000016c824dc3b0;
+L_0000016c824ddb70 .concat [ 4 4 0 0], LS_0000016c824ddb70_0_0, LS_0000016c824ddb70_0_4;
+L_0000016c824ddc10 .part L_0000016c824dd490, 8, 24;
+L_0000016c824ddcb0 .concat [ 24 8 0 0], L_0000016c824ddc10, L_0000016c824ddb70;
+L_0000016c824dc630 .part L_0000016c824dd490, 0, 24;
+L_0000016c824ddd50 .concat [ 8 24 0 0], L_0000016c825200d0, L_0000016c824dc630;
+L_0000016c824dddf0 .functor MUXZ 32, L_0000016c824ddd50, L_0000016c824ddcb0, v0000016c824dcc70_0, C4<>;
+L_0000016c824dc090 .functor MUXZ 32, L_0000016c824dd490, L_0000016c824dddf0, L_0000016c824dc130, C4<>;
+    .scope S_0000016c82478000;
+T_0 ;
+    %vpi_call 2 21 "$monitor", "Time=%0t ns | shift=%b | ctrl_shiftamt=%d | data_operandA=%h | data_result=%h", $time, v0000016c824dcc70_0, v0000016c824dc310_0, v0000016c824dcef0_0, v0000016c824dd7b0_0 {0 0 0};
+    %pushi/vec4 305419896, 0, 32;
+    %store/vec4 v0000016c824dcef0_0, 0, 32;
+    %pushi/vec4 0, 0, 5;
+    %store/vec4 v0000016c824dc310_0, 0, 5;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v0000016c824dcc70_0, 0, 1;
+    %delay 10000, 0;
+    %pushi/vec4 2309737967, 0, 32;
+    %store/vec4 v0000016c824dcef0_0, 0, 32;
+    %pushi/vec4 1, 0, 5;
+    %store/vec4 v0000016c824dc310_0, 0, 5;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v0000016c824dcc70_0, 0, 1;
+    %delay 10000, 0;
+    %pushi/vec4 4026531841, 0, 32;
+    %store/vec4 v0000016c824dcef0_0, 0, 32;
+    %pushi/vec4 1, 0, 5;
+    %store/vec4 v0000016c824dc310_0, 0, 5;
+    %pushi/vec4 1, 0, 1;
+    %store/vec4 v0000016c824dcc70_0, 0, 1;
+    %delay 10000, 0;
+    %pushi/vec4 305419896, 0, 32;
+    %store/vec4 v0000016c824dcef0_0, 0, 32;
+    %pushi/vec4 4, 0, 5;
+    %store/vec4 v0000016c824dc310_0, 0, 5;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v0000016c824dcc70_0, 0, 1;
+    %delay 10000, 0;
+    %pushi/vec4 4063516280, 0, 32;
+    %store/vec4 v0000016c824dcef0_0, 0, 32;
+    %pushi/vec4 8, 0, 5;
+    %store/vec4 v0000016c824dc310_0, 0, 5;
+    %pushi/vec4 1, 0, 1;
+    %store/vec4 v0000016c824dcc70_0, 0, 1;
+    %delay 10000, 0;
+    %pushi/vec4 305419896, 0, 32;
+    %store/vec4 v0000016c824dcef0_0, 0, 32;
+    %pushi/vec4 16, 0, 5;
+    %store/vec4 v0000016c824dc310_0, 0, 5;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v0000016c824dcc70_0, 0, 1;
+    %delay 10000, 0;
+    %pushi/vec4 2147483648, 0, 32;
+    %store/vec4 v0000016c824dcef0_0, 0, 32;
+    %pushi/vec4 31, 0, 5;
+    %store/vec4 v0000016c824dc310_0, 0, 5;
+    %pushi/vec4 1, 0, 1;
+    %store/vec4 v0000016c824dcc70_0, 0, 1;
+    %delay 10000, 0;
+    %pushi/vec4 2309737967, 0, 32;
+    %store/vec4 v0000016c824dcef0_0, 0, 32;
+    %pushi/vec4 10, 0, 5;
+    %store/vec4 v0000016c824dc310_0, 0, 5;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v0000016c824dcc70_0, 0, 1;
+    %delay 10000, 0;
+    %pushi/vec4 4063516280, 0, 32;
+    %store/vec4 v0000016c824dcef0_0, 0, 32;
+    %pushi/vec4 0, 0, 5;
+    %store/vec4 v0000016c824dc310_0, 0, 5;
+    %pushi/vec4 1, 0, 1;
+    %store/vec4 v0000016c824dcc70_0, 0, 1;
+    %delay 10000, 0;
+    %pushi/vec4 1, 0, 32;
+    %store/vec4 v0000016c824dcef0_0, 0, 32;
+    %pushi/vec4 31, 0, 5;
+    %store/vec4 v0000016c824dc310_0, 0, 5;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v0000016c824dcc70_0, 0, 1;
+    %delay 10000, 0;
+    %vpi_call 2 85 "$finish" {0 0 0};
+    %end;
+    .thread T_0;
+# The file index is used to find the file name in the following table.
+:file_names 9;
+    "N/A";
+    "<interactive>";
+    ".\barrelshift_tb.v";
+    ".\barrelshift.v";
+    ".\onebitshifter\onebitshifter.v";
+    ".\sixteenbitshifter.v";
+    ".\twobitshifter.v";
+    ".\fourbitshifter.v";
+    ".\eightbitshifter.v";
