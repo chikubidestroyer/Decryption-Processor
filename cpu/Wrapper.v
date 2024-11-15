@@ -36,6 +36,7 @@ module Wrapper (clock, reset);
 
 	// ADD YOUR MEMORY FILE HERE
 	localparam INSTR_FILE = "";
+	localparam DICT_FILE = "../WordList_1000/DICT";
 	
 	// Main Processing Unit
 	processor CPU(.clock(clock), .reset(reset), 
@@ -57,6 +58,11 @@ module Wrapper (clock, reset);
 	InstMem(.clk(clock), 
 		.addr(instAddr[11:0]), 
 		.dataOut(instData));
+
+	// TODO: Implement Dictionary into CPU
+	// Dictionary Memory (ROM)
+	// ROM #(.MEMFILE({DICT_FILE, ".mem"}))
+
 	
 	// Register File
 	regfile RegisterFile(.clock(clock), 
