@@ -29,8 +29,10 @@
 
 encrypt_loop:
     lw $t3, 0($t0)           # Load current character
-    beq $t3, $zero, end_encrypt     # Exit loop if escape character (0)
+    bne $t3, $zero, continue_loop
+    j end_encrypt
 
+continue_loop:
     # Check if character is uppercase (A-Z)
     sub $t8, $t3, $t4        # $t8 = char - 'A'
     blt $t8, $zero, store_char # If char < 'A', Store as-is because symbols are not translated
