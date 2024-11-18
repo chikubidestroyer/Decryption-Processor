@@ -67,6 +67,4 @@ store_char:
     j encrypt_loop           # Repeat for next character
 
 end_encrypt:
-    lw $t3, 0($a0)           # load encrypted character in output
-    addi $a0, $a0, 1          # Move to next word in output
-    bne $t3, $zero, end_encrypt           # Repeat for next character
+    add $zero, $zero, $zero
