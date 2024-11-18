@@ -1,3 +1,11 @@
+# Register Setup
+# $t0: pointer to input string
+# $t1: pointer to output string
+# $t2: Caesar cipher shift key (3)
+# $t3: current character
+# $t4, $t5, $t6, $t7: temporary registers
+    
+    # Setup
     addi $29, $zero, 100      
     addi $t4, $zero, 73
     sw $t4, 0($29)
@@ -9,6 +17,7 @@
     sw $t4, 3($29)
     addi $t4, $zero, 99
     sw $t4, 4($29)
+
     addi $t2, $zero, 3        # Set Caesar cipher shift key, 3 for test case
     addi $t4, $zero, 65       # ASCII 'A'
     addi $t5, $zero, 90       # ASCII 'Z'
@@ -17,6 +26,7 @@
     addi $t0, $29, 0         # agreed to place pointer to memory in reg29
     addi $a0, $29, 100       # output placed 100 words after input for now
     addi $t1, $a0, 0
+
 encrypt_loop:
     lw $t3, 0($t0)           # Load current character
     bne $t3, $zero, continue_loop
@@ -38,7 +48,7 @@ store_uppercase:
     j store_char             # Go to store character
 
 wrap_uppercase:
-    addi $t3, $t3, -26         # Wrap around if past 'Z'
+    sub $t3, $t3, 26         # Wrap around if past 'Z'
     j store_uppercase        # Go to store character
 
 check_lowercase:
@@ -51,22 +61,22 @@ check_lowercase:
     # Encrypt lowercase character
     add $t3, $t3, $t2        # Shift character by key
     sub $t8, $t3, $t7        # Check if past 'z'
-    blt $zero, $t8, wrap_lowercase # If not within 'z', wrap around
+    blt $zero, $t3, wrap_lowercase # If not within 'z', wrap around
 
 store_lowercase:
     j store_char             # Go to store character
 
 wrap_lowercase:
-    addi $t3, $t3, -26         # Wrap around if past 'z'
+    sub $t3, $t3, 26         # Wrap around if past 'z'
     j store_lowercase      
 
 store_char:
     sw $t3, 0($t1)           # Store encrypted character in output
-    addi $t0, $t0, 1          # Move to next word in input
-    addi $t1, $t1, 1          # Move to next word in output
+    add $t0, $t0, 1          # Move to next word in input
+    add $t1, $t1, 1          # Move to next word in output
     j encrypt_loop           # Repeat for next character
 
 end_encrypt:
     lw $t3, 0($a0)           # load encrypted character in output
-    addi $a0, $a0, 1          # Move to next word in output
+    add $a0, $a0, 1          # Move to next word in output
     bne $t3, $zero, end_encrypt           # Repeat for next character

@@ -35,7 +35,7 @@ module Wrapper (clock, reset);
 
 
 	// ADD YOUR MEMORY FILE HERE
-	localparam INSTR_FILE = "";
+	localparam INSTR_FILE = "./Test Files/Memory Files/sort";
 	localparam DICT_FILE = "../WordList_1000/DICT";
 	
 	// Main Processing Unit
