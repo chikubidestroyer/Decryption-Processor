@@ -20,7 +20,7 @@ module VGAController(
 );
     
     // Lab Memory Files Location
-    localparam FILES_PATH = "C:/Users/XXXX/Downloads/lab6-7_kit/lab6_kit/"; //change for pc
+    localparam FILES_PATH = "./"; //change for pc
 
     // Clock divider 100 MHz -> 25 MHz
     wire clk25; // 25MHz clock

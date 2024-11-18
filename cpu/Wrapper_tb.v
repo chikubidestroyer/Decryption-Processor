@@ -33,7 +33,7 @@
  *
  **/
 
-module Wrapper_tb #(parameter FILE = "sort");
+module Wrapper_tb #(parameter FILE = "Encryption");
 
 	// FileData
 	localparam DIR = "Test Files/";
