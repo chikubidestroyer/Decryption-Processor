@@ -224,9 +224,9 @@ and wg_2(wg2, g2, p3);
 
 or g_03(g03, wg0, wg1, wg2, g3);
 
-endmodule;
+endmodule
 
-module lv2_cla(c1, c2, c3, c4, c0, g0, g1, g2, g3, p0, p1, p2, p3);
+module lv2_cla(c1, c2, c3, c4, c0, g0, g1, g2, g3, p0, p1, p2, p3, g03, p03);
 
 input c0, g0, g1, g2, g3, p0, p1, p2, p3;
 output c1, c2, c3, c4, g03, p03;
@@ -245,4 +245,4 @@ or c_3(c3, w2, g2);
 and a_3(w3, c3, p3);
 or c_4(c4, w3, g3);
 
-endmodule;
+endmodule

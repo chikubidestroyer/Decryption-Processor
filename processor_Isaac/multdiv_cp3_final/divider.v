@@ -28,7 +28,7 @@ module divider(
     cla_add nr(.s(neg_r), .a(~temp_remainder), .b(32'b0), .Cin(1'b1));
     assign quotient = (is_D_neg ^ is_V_neg)? neg_q: temp_quotient;
     assign remainder = is_D_neg? neg_r: temp_remainder;
-endmodule;
+endmodule
 
 module unsigned_divider (
     input [31:0] A,

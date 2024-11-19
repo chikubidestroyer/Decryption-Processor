@@ -30,7 +30,7 @@ module Wrapper (
     input [15:0] SW,
     output reg [15:0] LED);
     wire clock, reset;
-    assign clock = clk_100mhz;
+    
     assign reset = BTNU; 
 	wire rwe, mwe;
 	wire[4:0] rd, rs1, rs2;
@@ -38,6 +38,18 @@ module Wrapper (
 		rData, regA, regB,
 		memAddr, memDataIn, memDataOut, q_dmem, data;
     reg [15:0] SW_Q, SW_M;  
+    wire custom_clk;
+     clk_wiz_0 pll
+ (
+  // Clock out ports
+  .clk_out1(custom_clk),
+  // Status and control signals
+  .reset(reset),
+  .locked(),
+ // Clock in ports
+  .clk_in1(clk_100mhz)
+ );
+ assign clock = custom_clk;
     
     wire io_read, io_write;
     
