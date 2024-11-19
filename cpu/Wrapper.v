@@ -31,14 +31,14 @@ module Wrapper (clock, reset, clk_100mhz, BTNU, SW, LED);
 
 	wire rwe, mwe;
 	wire[4:0] rd, rs1, rs2;
-	wire[31:0] instAddr, instData, 
+	wire[31:0] instAddr, instData, DictMemAddress 
 		rData, regA, regB,
-		memAddr, memDataIn, memDataOut;
+		memAddr, memDataIn, memDataOut, DictMemDataOut;
 
 
 	// ADD YOUR MEMORY FILE HERE
 	localparam INSTR_FILE = "./Test Files/Memory Files/sort";
-	localparam DICT_FILE = "../WordList_1000/DICT";
+	localparam DICT_FILE = "./DICTMEM/dictionary";
 	
 	// Main Processing Unit
 	processor CPU(.clock(clock), .reset(reset), 
@@ -63,7 +63,12 @@ module Wrapper (clock, reset, clk_100mhz, BTNU, SW, LED);
 
 	// TODO: Implement Dictionary into CPU
 	// Dictionary Memory (ROM)
-	// ROM #(.MEMFILE({DICT_FILE, ".mem"}))
+	ROM #(.MEMFILE({dictionary, ".mem"}))
+	DictMem(
+		.clk(clock), 
+        .addr(DictMemAddress[11:0]), 
+        .dataOut(DictMemDataOut)
+	)
 
 	
 	// Register File
