@@ -34,22 +34,12 @@ module Wrapper (
     assign reset = BTNU; 
 	wire rwe, mwe;
 	wire[4:0] rd, rs1, rs2;
-	wire[31:0] instAddr, instData, 
+	wire[31:0] instAddr, instData, DictMemAddress, DictMemDataOut, 
 		rData, regA, regB,
 		memAddr, memDataIn, memDataOut, q_dmem, data;
     reg [15:0] SW_Q, SW_M;  
-    wire custom_clk;
-     clk_wiz_0 pll
- (
-  // Clock out ports
-  .clk_out1(custom_clk),
-  // Status and control signals
-  .reset(reset),
-  .locked(),
- // Clock in ports
-  .clk_in1(clk_100mhz)
- );
- assign clock = custom_clk;
+    
+ assign clock = clk_100mhz;
     
     wire io_read, io_write;
     
@@ -113,6 +103,7 @@ module Wrapper (
 	localparam DICT_FILE = "./DICTMEM/dictionary";
 
 	// Dictionary Memory (ROM)
+
 	ROM #(.MEMFILE({DICT_FILE, ".mem"}))
 	DictMem(
 		.clk(clock), 
