@@ -84,7 +84,11 @@ module Wrapper (
 									
 		// RAM
 		.wren(mwe), .address_dmem(memAddr), 
-		.data(memDataIn), .q_dmem(q_dmem)); 
+		.data(memDataIn), .q_dmem(memDataOut),
+		
+		// Dictionary Memory
+		.address_dictmem(DictMemAddress),
+		.q_dictmem(DictMemDataOut)); 
 	
 	// Instruction Memory (ROM)
 	ROM #(.MEMFILE({INSTR_FILE, ".mem"}))
@@ -105,6 +109,16 @@ module Wrapper (
 		.addr(memAddr[11:0]), 
 		.dataIn(memDataIn), 
 		.dataOut(memDataOut));
+
+	localparam DICT_FILE = "./DICTMEM/dictionary";
+
+	// Dictionary Memory (ROM)
+	ROM #(.MEMFILE({DICT_FILE, ".mem"}))
+	DictMem(
+		.clk(clock), 
+        .addr(DictMemAddress[11:0]), 
+        .dataOut(DictMemDataOut)
+	);
 		
 	
 
