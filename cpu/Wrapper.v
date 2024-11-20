@@ -53,7 +53,11 @@ module Wrapper (clock, reset, clk_100mhz, BTNU, SW, LED);
 									
 		// RAM
 		.wren(mwe), .address_dmem(memAddr), 
-		.data(memDataIn), .q_dmem(memDataOut)); 
+		.data(memDataIn), .q_dmem(memDataOut),
+		
+		// DICTIONARY ROM
+		.address_dictmem(DictMemAddress), .q_dictmem(DictMemDataOut)
+		); 
 	
 	// Instruction Memory (ROM)
 	ROM #(.MEMFILE({INSTR_FILE, ".mem"}))

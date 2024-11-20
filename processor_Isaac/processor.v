@@ -39,7 +39,10 @@ module processor(
     ctrl_readRegB,                  // O: Register to read from port B of RegFile
     data_writeReg,                  // O: Data to write to for RegFile
     data_readRegA,                  // I: Data from port A of RegFile
-    data_readRegB                   // I: Data from port B of RegFile
+    data_readRegB,                   // I: Data from port B of RegFile
+
+    address_dictmem,
+    q_dictmem
 	 
 	);
 
@@ -49,6 +52,10 @@ module processor(
 	// Imem
     output [31:0] address_imem;
 	input [31:0] q_imem;
+
+    // Dictionary
+    output[31:0] DictMemAddress;
+    input [31:0] DictMemDataOut;
 
 	// Dmem
 	output [31:0] address_dmem, data;
@@ -71,7 +78,7 @@ module processor(
 
     wire interlock_stall;
 
-    assign interlock_stall = ((XIRout[31:27] == 5'b01000) && (ctrl_readRegA == XIRout[26:22] || ctrl_readRegB == XIRout[26:22]));
+    assign interlock_stall = ((XIRout[31:27] == 5'b01000 || XIRout[31:27] == 5'b01001) && (ctrl_readRegA == XIRout[26:22] || ctrl_readRegB == XIRout[26:22]));
 
     wire PC_stall;
     assign PC_stall = multdiv_stall || interlock_stall;
@@ -134,7 +141,7 @@ module processor(
 
     wire [4:0] ALUopcode;
     assign ALUopcode = (XIRout[31:27] == 5'b0) ? XIRout[6:2] :  // normal type R ALU operations
-                        (XIRout[31:27] == 5'b00101 || XIRout[31:27] == 5'b00111 || XIRout[31:27] == 5'b01000) ? 5'b00000: // add for type I instructions
+                        (XIRout[31:27] == 5'b00101 || XIRout[31:27] == 5'b00111 || XIRout[31:27] == 5'b01000 || XIRout[31:27] == 5'b01001) ? 5'b00000: // add for type I instructions
                         5'bz;
 
     wire isRdModifiedInW, isRdModifiedInM;
@@ -142,15 +149,15 @@ module processor(
     isRdModified checkModificationM(MIRout, isRdModifiedInM);
 
     wire [31:0] ALU_B_in, ALU_A_in; // what actually goes into the ALU
-    assign ALU_B_in = (XIRout[31:27] == 5'b00101 || XIRout[31:27] == 5'b00111 || XIRout[31:27] == 5'b01000)? {extended_15, XIRout[16:0]}:
+    assign ALU_B_in = (XIRout[31:27] == 5'b00101 || XIRout[31:27] == 5'b00111 || XIRout[31:27] == 5'b01000 || XIRout[31:27] == 5'b01001)? {extended_15, XIRout[16:0]}:
                     (MregToWriteTO == XIRout[16:12] && XIR_type != 2'b01 && XIR_type != 2'b10) ? WOin : // bypass from Memory Stage for Rt in type R ins
-                    (MregToWriteTO == XIRout[26:22] && XIR_type == 2'b01)? (MIRout[31:27] == 5'b01000) ? WDin: WOin: // bypass from Memory Stage for Rd in type I ins
+                    (MregToWriteTO == XIRout[26:22] && XIR_type == 2'b01)? (MIRout[31:27] == 5'b01000 || MIRout[31:27] == 5'b01001) ? WDin: WOin: // bypass from Memory Stage for Rd in type I ins
                     (MregToWriteTO == 5'b11110 && XIRout[31:27] == 5'b10110) ? WOin: // bypass from Mem stage for rstatus in bex ins
                     (ctrl_writeReg == XIRout[16:12] && XIR_type != 2'b01 && XIR_type != 2'b10) ? data_writeReg: // bypass from Write Back Stage for Rt in type R ins
                     (ctrl_writeReg == XIRout[26:22] && XIR_type == 2'b01)? data_writeReg: // bypass from Write back stage for Rd in type I ins
                     (ctrl_writeReg == 5'b11110 && XIRout[31:27] == 5'b10110) ? data_writeReg: // bypass from WB stage for rstatus in bex ins
                     XBout;
-    assign ALU_A_in = (MregToWriteTO == XIRout[21:17]) ? (MIRout[31:27] == 5'b01000) ? WDin: WOin : // bypass from Memory Stage
+    assign ALU_A_in = (MregToWriteTO == XIRout[21:17]) ? (MIRout[31:27] == 5'b01000 || MIRout[31:27] == 5'b01001) ? WDin: WOin : // bypass from Memory Stage
                         (ctrl_writeReg == XIRout[21:17]) ? data_writeReg: // bypass from Write back stage
                         (XIRout[31:27] == 5'b10110) ? 5'b0: // set A as 0 for bex
                         XAout; 
@@ -188,7 +195,7 @@ module processor(
                             (XIRout[31:27] == 5'b00011)? {T_sign_extend, XIRout[26:0]}: // jal
                             (XIRout[31:27] == 5'b00100)? // jr
                                 (isRdModifiedInM && MregToWriteTO == XIRout[26:22]) ? 
-                                    (MIRout[31:27] == 5'b01000) ? WDin:
+                                    (MIRout[31:27] == 5'b01000 || MIRout[31:27] == 5'b01001) ? WDin:
                                     WOin
                                 : (isRdModifiedInW && ctrl_writeReg == XIRout[26:22])?
                                     data_writeReg:
@@ -259,28 +266,24 @@ module processor(
 
     wire W_stall, W_exception_out;
     assign W_stall = multdiv_stall;
-    assign MisLoad = MIRout[31:27] == 5'b01000;
+    assign MisLoad = MIRout[31:27] == 5'b01000 || MIRout[31:27] == 5'b01001;
     assign MisSave = MIRout[31:27] == 5'b00111;
     
-    assign address_dmem = MisLoad || MisSave? MOout: 5'dx;
+    assign address_dmem = (MisLoad && MIRout[31:27] == 5'b01000)|| MisSave? MOout: 5'dz;
+    assign DictMemAddress = (MisLoad && MIRout[31:27] == 5'01001) ? MOout: 5'dz; // if instruction is to retrieve from dictionary rom
     assign data = 
                 (MIRout[31:27] == 5'b00111 && MIRout[26:22] == ctrl_writeReg)? data_writeReg:
                 MBout;
 
     assign wren = MisSave;
     assign WDin = isRdModifiedInW? 
-                        (MIRout[26:22] == WIRout[26:22])? data_writeReg : q_dmem
+                        (MIRout[26:22] == WIRout[26:22])? data_writeReg : 
+                        MIRout[31:27] == 5'b01000 ? q_dmem:
+                        q_dictmem
                     : q_dmem;
 
     wire [31:0] newMemIR; // for determining whether if IR has changed
     reg32 memCheckSame( ~clock, 1'b0, 1'b1, MIRout, newMemIR);
-    
-    wire mem_ready, in_mem_counter, out_mem_counter;
-    assign in_mem_counter = (MIRout != newMemIR && MIRout[31:27] == 5'b01000)? 1'b1 : 1'b0;
-
-    dffe_ref memCounter(out_mem_counter, in_mem_counter, ~clock, 1'b1, reset);
-    wire loadRdy;
-    assign loadRdy = ~out_mem_counter;
 
 
     MW mw_pipeline(WOout, WDout, WIRout, W_exception_out, WOin, WDin, WIRin, M_exception, ~clock, W_stall, reset);
@@ -288,7 +291,7 @@ module processor(
     // Writeback
 
     wire WisLoad;
-    assign WisLoad = WIRout[31:27] == 5'b01000;
+    assign WisLoad = WIRout[31:27] == 5'b01000 || WIRout[31:27] == 5'b01001;
 
     assign data_writeReg = (WisLoad) ? WDout: // load
                             WOout;
