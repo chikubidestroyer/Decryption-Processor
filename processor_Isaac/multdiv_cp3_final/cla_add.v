@@ -226,10 +226,10 @@ or g_03(g03, wg0, wg1, wg2, g3);
 
 endmodule
 
-module lv2_cla(c1, c2, c3, c4, c0, g0, g1, g2, g3, p0, p1, p2, p3, g03, p03);
+module lv2_cla(c1, c2, c3, c4, c0, g0, g1, g2, g3, p0, p1, p2, p3);
 
 input c0, g0, g1, g2, g3, p0, p1, p2, p3;
-output c1, c2, c3, c4, g03, p03;
+output c1, c2, c3, c4;
 wire w0, w1, w2, w3;
 wire wg0, wg1, wg2;
 

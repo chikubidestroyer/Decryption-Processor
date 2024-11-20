@@ -54,8 +54,8 @@ module processor(
 	input [31:0] q_imem;
 
     // Dictionary
-    output[31:0] DictMemAddress;
-    input [31:0] DictMemDataOut;
+    output[31:0] address_dictmem;
+    input [31:0] q_dictmem;
 
 	// Dmem
 	output [31:0] address_dmem, data;
@@ -270,7 +270,7 @@ module processor(
     assign MisSave = MIRout[31:27] == 5'b00111;
     
     assign address_dmem = (MisLoad && MIRout[31:27] == 5'b01000)|| MisSave? MOout: 5'dz;
-    assign DictMemAddress = (MisLoad && MIRout[31:27] == 5'01001) ? MOout: 5'dz; // if instruction is to retrieve from dictionary rom
+    assign address_dictmem = (MisLoad && MIRout[31:27] == 5'b01001) ? MOout: 5'dz; // if instruction is to retrieve from dictionary rom
     assign data = 
                 (MIRout[31:27] == 5'b00111 && MIRout[26:22] == ctrl_writeReg)? data_writeReg:
                 MBout;

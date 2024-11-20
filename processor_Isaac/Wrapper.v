@@ -24,18 +24,21 @@
  *
  **/
 
-module Wrapper (clock, reset);
-	input clock, reset;
+module Wrapper (clock, reset, clk_100mhz, BTNU, SW, LED);
+	input clock, reset, clk_100mhz, BTNU;
+	input [15:0] SW;
+	output reg [15:0] LED;
 
 	wire rwe, mwe;
 	wire[4:0] rd, rs1, rs2;
-	wire[31:0] instAddr, instData, 
+	wire[31:0] instAddr, instData, DictMemAddress, 
 		rData, regA, regB,
-		memAddr, memDataIn, memDataOut;
+		memAddr, memDataIn, memDataOut, DictMemDataOut;
 
 
 	// ADD YOUR MEMORY FILE HERE
-	localparam INSTR_FILE = "C:/Users/Isaac/OneDrive/Desktop/DKU/CS 350/cp4-cpu/cp4-processor/processor/Test Files/Memory Files/sort";
+	localparam INSTR_FILE = "./Test Files/Memory Files/sort";
+	localparam DICT_FILE = "./DICTMEM/dictionary";
 	
 	// Main Processing Unit
 	processor CPU(.clock(clock), .reset(reset), 
@@ -50,13 +53,27 @@ module Wrapper (clock, reset);
 									
 		// RAM
 		.wren(mwe), .address_dmem(memAddr), 
-		.data(memDataIn), .q_dmem(memDataOut)); 
+		.data(memDataIn), .q_dmem(memDataOut),
+		
+		// DICTIONARY ROM
+		.address_dictmem(DictMemAddress), .q_dictmem(DictMemDataOut)
+		); 
 	
 	// Instruction Memory (ROM)
 	ROM #(.MEMFILE({INSTR_FILE, ".mem"}))
 	InstMem(.clk(clock), 
 		.addr(instAddr[11:0]), 
 		.dataOut(instData));
+
+	// TODO: Implement Dictionary into CPU
+	// Dictionary Memory (ROM)
+	ROM #(.MEMFILE({DICT_FILE, ".mem"}))
+	DictMem(
+		.clk(clock), 
+        .addr(DictMemAddress[11:0]), 
+        .dataOut(DictMemDataOut)
+	);
+
 	
 	// Register File
 	regfile RegisterFile(.clock(clock), 
