@@ -14,13 +14,13 @@ with open('dictionary.mem', 'w') as file:
     for word in dict:
         # escaping start
         if len(current_line) == 24:
-            file.write(current_line + "00000002"+ "\n")
+            file.write(current_line + "00000010"+ "\n")
             current_line = ""
         elif len(current_line) == 32:
             file.write(current_line+"\n")
-            current_line = "00000002"
+            current_line = "00000010"
         else:
-            current_line = current_line + "00000002"
+            current_line = current_line + "00000010"
         
         
         word_length = len(word)
@@ -37,9 +37,9 @@ with open('dictionary.mem', 'w') as file:
         assert len(current_line) < 32
         if len(current_line) == 32:
             file.write(current_line + "\n")
-            current_line = "00000003"
+            current_line = "00000011"
         else:
-            current_line = current_line + "00000003"
+            current_line = current_line + "00000011"
     if current_line!= "":
         file.write(current_line + '0'*(32-len(current_line)))
         #file.write(resultant_string + "\n")
