@@ -34,7 +34,7 @@ module Wrapper (
     assign reset = BTNU; 
 	wire rwe, mwe;
 	wire[4:0] rd, rs1, rs2;
-	wire[31:0] instAddr, instData, 
+	wire[31:0] instAddr, instData, DictMemAddress, DictMemDataOut,
 		rData, regA, regB,
 		memAddr, memDataIn, memDataOut, q_dmem, data;
     reg [15:0] SW_Q, SW_M;  
