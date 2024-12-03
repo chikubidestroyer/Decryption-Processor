@@ -4,74 +4,102 @@
 #   $a1 - Pointer to output string
 # Outputs:
 #   Decrypted string is stored in the location pointed to by $a1
-SETUP:
+SETUP_BF_DECRYPT:
     addi $sp, $zero, 1000 # default sp, should initialize in final script
     addi $a0, $zero, 0
     addi $a1, $a0, 500
+    addi $t0, $zero, 0
+    addi $t2, $zero, 0    # max score for a decryption
+    addi $t3, $zero, 0    # shift amount for max score for a decryption
+
 
 decryption_loop:
+    addi $sp, $sp, -1
+    sw $ra, 0($sp)
+
     addi $t1, $zero, 25
     blt $t1, t0, end_brute_force   # If shift key > 25, end brute force
 
     # Call decryption function with the current shift key
-    addi $sp, $sp, -3        # Allocate 4 words for arguments
+    addi $sp, $sp, -5        # Allocate 5 words for arguments
+    sw $t2, 4($sp)
+    sw $t3, 3($sp)           # Save max score for a decryption at offset 3
     sw $a0, 2($sp)           # Save $a0 (encrypted string pointer) at offset 2
     sw $a1, 1($sp)           # Save $a2 (output pointer) at offset 1
     sw $t0, 0($sp)           # Save shift key as argument at offset 0
 
     addi $a0, $a0, 0         # Pass encrypted string pointer
     addi $a2, $t0, 0         # Pass shift count
-    addi $a1, $a0, 100       # Pass output address
+    addi $a1, $a1, 0         # Pass output address
     jal decrypt_string       # Call decryption function
-    nop                      # Delay slot
-
-    addi $t1, $a1, 0         # store pointer of decryption into t1
 
     # Restore arguments
     lw $t0, 0($sp)           # Restore shift key
     lw $a1, 1($sp)           # Restore output pointer
     lw $a0, 2($sp)           # Restore encrypted string pointer
-    addi $sp, $sp, 3         # Deallocate 3 words for arguments
+    lw $t2, 4($sp)
+    lw $t3, 3($sp)           # Save max score for a decryption at offset 3
+    addi $sp, $sp, 5         # Deallocate 5 words for arguments
+    addi $t1, $a1, 0         # store pointer of decryption into t1
 
-    # Check decrypted string word by word in the dictionary
-    addi $t2, $zero, 0       # Word match counter
+    addi $sp, $sp, -6        # Allocate 6 words for arguments
+    sw $t2, 5($sp)
+    sw $t3, 4($sp)           # Save max score for a decryption at offset 4
+    sw $t1, 3($sp)           # save $t1, pointer to decrypted message at offset 3
+    sw $a0, 2($sp)           # Save $a0 (encrypted string pointer) at offset 2
+    sw $a1, 1($sp)           # Save $a1 (output pointer) at offset 1
+    sw $t0, 0($sp)           # Save shift key as argument at offset 0
 
-check_decrypted_words:
-    lb $t3, 0($t1)           # Load current word (byte by byte if necessary)
-    beq $t3, $zero, check_success # If null character, check success
-    nop
+    jal Validation
 
-    # Check if word starts with 0x02 and ends with 0x03
-    andi $t4, $t3, 0xFF      # Extract first character
-    bne $t4, 2, skip_word    # If not start of word, skip
-    nop
-    # Additional word validation logic here...
+    # Restore arguments
+    lw $t0, 0($sp)           # Restore shift key
+    lw $a1, 1($sp)           # Restore output pointer
+    lw $a0, 2($sp)           # Restore encrypted string pointer
+    lw $t1, 3($sp)
+    lw $t2, 5($sp)
+    lw $t3, 4($sp)           # load max score for a decryption at offset 4
+    addi $sp, $sp, 4         # Deallocate 6 words for arguments
 
-    # Increment match counter for valid words
-    addi $t2, $t2, 1
+    blt $v1, $t2, max_not_modified
+    add $t2, $v1, $zero      # update max score
+    add $t3, $t0, $zero      # update shamt for max score
 
-skip_word:
-    addi $t1, $t1, 1         # Move to next word (byte-level addressing)
-    j check_decrypted_words  # Repeat for next word
-    nop
+max_not_modified:
 
-check_success:
-    addi $t6, $zero, 5       # Minimum matches threshold (example: 5)
-    blt $t2, $t6, next_shift # If matches < threshold, try next shift
-    nop
+    addi $t0, $t0, 1         # increment shift amount by 1
 
-    # Successful decryption logic (copy to output)...
-
-next_shift:
-    addi $t0, $t0, 1         # Increment shift key
-    j decryption_loop        # Try next shift key
+    j decrypt_loop
 
 end_brute_force:
-    # Restore caller-saved registers (byte-level)
-    lb $t2, 0($sp)           # Restore $t2
-    lb $t0, 1($sp)           # Restore $t0
-    lb $ra, 2($sp)           # Restore return address
-    addi $sp, $sp, 3         # Deallocate 3 bytes
 
-    jr $ra                   # Return to caller
-    nop
+    # If we've gone through all possible shift values and found nothing better,
+    # Call decryption function with the current shift key
+    addi $sp, $sp, -5        # Allocate 5 words for arguments
+    sw $t2, 4($sp)
+    sw $t3, 3($sp)           # Save max score for a decryption at offset 3
+    sw $a0, 2($sp)           # Save $a0 (encrypted string pointer) at offset 2
+    sw $a1, 1($sp)           # Save $a2 (output pointer) at offset 1
+    sw $t0, 0($sp)           # Save shift key as argument at offset 0
+
+    addi $a0, $a0, 0         # Pass encrypted string pointer
+    addi $a2, $t3, 0         # Pass shift count (which is max at this point)
+    addi $a1, $a1, 0         # Pass output address
+    jal decrypt_string       # Call decryption function
+
+    # Restore arguments
+    lw $t0, 0($sp)           # Restore shift key
+    lw $a1, 1($sp)           # Restore output pointer
+    lw $a0, 2($sp)           # Restore encrypted string pointer
+    lw $t2, 4($sp)
+    lw $t3, 3($sp)           # Save max score for a decryption at offset 3
+    addi $sp, $sp, 5         # Deallocate 5 words for arguments
+    addi $t1, $a1, 0         # store pointer of decryption into t1
+
+    # decrypted message with score score should exist in a1 in memory
+    
+    lw $ra, 0($sp) # Restore ra
+    addi $sp, $sp, 1
+    jr $ra
+
+    

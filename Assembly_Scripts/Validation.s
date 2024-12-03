@@ -177,3 +177,26 @@ compute_percentage:
 
 finalize:
     jr $ra                      # Return to caller
+
+check_in_range:
+    addi $v0, $zero, 0       # Initialize $v0 to 0 (default: out of range)
+
+    # Check if ASCII is in the range of 'A' to 'Z' (65-90)
+    addi $t0, $zero, 65               # Load ASCII for 'A'
+    addi $t1, $zero, 91               # Load ASCII for 'Z' + 1
+    blt $a0, $t0, check_lower_case # If $a0 < 65, skip to check lowercase range
+    blt $t1, $a0, check_lower_case # If $a0 >= 91, skip to check lowercase range
+    j in_range               # ASCII is in uppercase range
+
+check_lower_case:
+    # Check if ASCII is in the range of 'a' to 'z' (97-122)
+    addi $t2, $zero, 97               # Load ASCII for 'a'
+    addi $t3, $zero, 123              # Load ASCII for 'z' + 1
+    blt $a0, $t2, return_result # If $a0 < 97, return 0
+    blt $t3, $a0, return_result # If $a0 >= 123, return 0
+
+in_range:
+    addi $v0, $zero, 1       # Set $v0 to 1 (in range)
+
+return_result:
+    jr $ra                   # Return to caller

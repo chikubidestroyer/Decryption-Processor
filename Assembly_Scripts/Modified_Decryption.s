@@ -1,63 +1,53 @@
-# Caesar cipher decryption function with key
-# Inputs:
-#   $a0 - Pointer to input string
-#   $a1 - Pointer to output string
-#   $a2 - Shift key
-# Outputs:
-#   Decrypted string is stored in the location pointed to by $a1
 decrypt_string:
-    addi $t4, $zero, 65       # ASCII 'A'
-    addi $t5, $zero, 90       # ASCII 'Z'
-    addi $t6, $zero, 97       # ASCII 'a'
-    addi $t7, $zero, 122      # ASCII 'z'
+    addi $t9, $zero, 26       # Constant for alphabet length (used for wrapping)
 
 decrypt_loop:
     lw $t3, 0($a0)            # Load current character
-    bne $t3, $zero, check_uppercase # If not null character, check case
+    bne $t3, $zero, validate_char # If not null character, validate range
     j end_decrypt             # Jump to end if null character encountered
 
-check_uppercase:
-    # Check if character is uppercase (A-Z)
-    sub $t8, $t3, $t4         # $t8 = char - 'A'
-    blt $t8, $zero, store_char # If char < 'A', store as-is
-    sub $t8, $t3, $t5         # $t8 = char - 'Z'
-    blt $zero, $t8, check_lowercase # If char > 'Z', check lowercase
+validate_char:
+    addi $a3, $t3, 0          # Pass character in $a3 to check_in_range
+    jal check_in_range        # Call check_in_range
+    bne $v0, $zero, decrypt_char # If in range, decrypt character
+    j store_char              # If not in range, store as-is
 
-    # Decrypt uppercase character
+decrypt_char:
+    addi $v0, $zero, 0        # Initialize range type (0 = uppercase, 1 = lowercase)
+    sub $t8, $t3, 97          # Check if character is in lowercase range (a-z)
+    blt $t8, $zero, decrypt_uppercase
+    addi $v0, $zero, 1        # Set range type to 1 (lowercase)
+    sub $t8, $t3, 122
+    blt $zero, $t8, decrypt_uppercase
+
+decrypt_lowercase:
     sub $t3, $t3, $a2         # Shift character backward by key
-    sub $t8, $t4, $t3         # Check if before 'A'
-    blt $t8, $zero, wrap_uppercase # If within 'A-Z', proceed to store
-
-store_uppercase:
-    j store_char              # Go to store character
-
-wrap_uppercase:
-    addi $t3, $t3, 26         # Wrap around if before 'A'
-    j store_uppercase         # Go to store character
-
-check_lowercase:
-    # Check if character is lowercase (a-z)
-    sub $t8, $t3, $t6         # $t8 = char - 'a'
-    blt $t8, $zero, store_char # If char < 'a', store as-is
-    sub $t8, $t3, $t7         # $t8 = char - 'z'
-    blt $zero, $t8, store_char # If char > 'z', store as-is
-
-    # Decrypt lowercase character
-    sub $t3, $t3, $a2         # Shift character backward by key
-    sub $t8, $t6, $t3         # Check if before 'a'
-    blt $t8, $zero, wrap_lowercase # If within 'a-z', proceed to store
+    sub $t8, 97, $t3          # Check if before 'a'
+    blt $t8, $zero, wrap_lowercase # If within range, proceed to store
 
 store_lowercase:
     j store_char              # Go to store character
 
 wrap_lowercase:
-    addi $t3, $t3, 26         # Wrap around if before 'a'
+    add $t3, $t3, $t9         # Wrap around if before 'a'
     j store_lowercase         # Go to store character
+
+decrypt_uppercase:
+    sub $t3, $t3, $a2         # Shift character backward by key
+    sub $t8, 65, $t3          # Check if before 'A'
+    blt $t8, $zero, wrap_uppercase # If within range, proceed to store
+
+store_uppercase:
+    j store_char              # Go to store character
+
+wrap_uppercase:
+    add $t3, $t3, $t9         # Wrap around if before 'A'
+    j store_uppercase         # Go to store character
 
 store_char:
     sw $t3, 0($a1)            # Store decrypted character in output
-    addi $a0, $a0, 1          # Move to next word in input
-    addi $a1, $a1, 1          # Move to next word in output
+    addi $a0, $a0, 1          # Move to next character in input
+    addi $a1, $a1, 1          # Move to next character in output
     j decrypt_loop            # Repeat for next character
 
 end_decrypt:
