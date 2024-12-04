@@ -37,7 +37,7 @@ module Wrapper (clock, reset, clk_100mhz, BTNU, SW, LED);
 
 
 	// ADD YOUR MEMORY FILE HERE
-	localparam INSTR_FILE = "./Test Files/Memory Files/sort";
+	localparam INSTR_FILE = "./Test Files/Memory Files/Validation";
 	localparam DICT_FILE = "./DICTMEM/dictionary";
 	
 	// Main Processing Unit

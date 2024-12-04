@@ -1,0 +1,9 @@
+Reg:  3 Expected:          50 Actual:         100
+Reg:  4 Expected:           0 Actual:          32
+Reg:  8 Expected:           0 Actual:         100
+Reg:  9 Expected:           0 Actual:           8
+Reg: 10 Expected:           0 Actual:         108
+Reg: 13 Expected:           0 Actual:         108
+Reg: 15 Expected:           0 Actual:         100
+Reg: 29 Expected:           0 Actual:        1000
+Reg: 31 Expected:           0 Actual:          19

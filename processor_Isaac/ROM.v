@@ -8,7 +8,7 @@ module ROM #(parameter DATA_WIDTH = 32, ADDRESS_WIDTH = 12, DEPTH = 4096, MEMFIL
     
     initial begin
         if(MEMFILE > 0) begin
-            $readmemh(MEMFILE, MemoryArray);
+            $readmemb(MEMFILE, MemoryArray);
         end
     end
     

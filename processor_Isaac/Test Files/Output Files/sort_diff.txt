@@ -1,9 +1,5 @@
-Reg:  2 Expected:           0 Actual:        3834
-Reg:  4 Expected:           0 Actual:        3834
-Reg:  8 Expected:           0 Actual:        3834
-Reg: 10 Expected:           0 Actual:           4
-Reg: 11 Expected:           0 Actual:           4
-Reg: 12 Expected:           0 Actual:        3834
+Reg: 13 Expected:          10 Actual:           0
+Reg: 14 Expected:         762 Actual:           0
 Reg: 15 Expected:         762 Actual:           0
 Reg: 16 Expected:         762 Actual:           0
 Reg: 17 Expected:         762 Actual:           0
@@ -16,8 +12,8 @@ Reg: 23 Expected:         762 Actual:           0
 Reg: 24 Expected:         762 Actual:           0
 Reg: 25 Expected:         762 Actual:           0
 Reg: 26 Expected:         762 Actual:           0
-Reg: 27 Expected:         762 Actual:        3828
+Reg: 27 Expected:         762 Actual:           0
 Reg: 28 Expected:         762 Actual:           0
-Reg: 29 Expected:         762 Actual:         256
+Reg: 29 Expected:         762 Actual:           0
 Reg: 30 Expected:         762 Actual:           0
-Reg: 31 Expected:         762 Actual:          81
+Reg: 31 Expected:         762 Actual:           0

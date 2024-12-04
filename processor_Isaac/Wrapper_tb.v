@@ -33,7 +33,7 @@
  *
  **/
 
-module Wrapper_tb #(parameter FILE = "sort");
+module Wrapper_tb #(parameter FILE = "Validation");
 
 	// FileData
 	localparam DIR = "Test Files/";
