@@ -41,6 +41,8 @@ Validation:
     addi $t5, $t2, 0             # Pointer to character of current decrypted d_word
     addi $t8, $t4, 0             # Pointer to current character of d_word in dictionary
 
+    j skip_to_next_word_in_dictionary
+
 read_next_word: # memory word
     lw $t3, 0($t5)               # Load the next word from the input string
     bne $t3, $zero, process_char # If not null, process character
@@ -66,7 +68,7 @@ process_char:
     lw $t2, 0($sp)
     addi $sp, $sp, 6
 
-    bne $v1, $zero, match_to_dictionary
+    bne $v0, $zero, match_to_dictionary
     j update_stats                            # all characters in previous decrypted word matched to a word inthe dictionary
 
 update_stats:
@@ -80,7 +82,11 @@ update_stats:
 
 match_to_dictionary:
     lwDict $t6, $t4, 0
-    addi $sp, $sp, -6
+    nop
+    nop
+    addi $sp, $sp, -8
+    sw $t6, 7($sp)
+    sw $t8, 6($sp)
     sw $ra, 5($sp)
     sw $t5, 4($sp)
     sw $t3, 3($sp)             
@@ -89,13 +95,15 @@ match_to_dictionary:
     sw $t2, 0($sp)
     addi $a0, $t8, 0  # pass the pointer to dictionary m_word character
     jal bit_masking_dictionary_parsing
+    lw $t6, 7($sp)
+    lw $t8, 6($sp)
     lw $ra, 5($sp)
     lw $t5, 4($sp)
     lw $t3, 3($sp)             
     lw $t0, 2($sp)              
     lw $t1, 1($sp)               
     lw $t2, 0($sp)
-    addi $sp, $sp, 6
+    addi $sp, $sp, 8
     addi $t9, $v0, 0
     addi $t7, $v1, 0
     and $t6, $t9, $t6                            # masking the loaded dictionary word
@@ -113,6 +121,50 @@ match_to_dictionary:
     lw $ra, 2($sp)
     addi $sp, $sp, 3
 
+    bne $t6, $zero, continue_match
+
+    j update_stats_no_match
+
+update_stats_no_match:
+    addi $t1, $t1, 1               # Increment total d_word count
+    addi $t4, $zero, 0                        # this indicates that input string word is not found in the dictionary
+    addi $t8, $zero, 0
+    j move_to_next_decrypted_dword
+
+move_to_next_decrypted_dword:
+    addi $t5, $t5, 1               # Move to the next character in the decrypted word
+    lw $t3, 0($t5)                 # load next m_word
+
+    addi $sp, $sp, -6
+    sw $ra, 5($sp)
+    sw $t5, 4($sp)
+    sw $t3, 3($sp)             
+    sw $t0, 2($sp)              
+    sw $t1, 1($sp)               
+    sw $t2, 0($sp)
+
+    addi $a0, $t3, 0
+    jal check_in_range
+
+    lw $ra, 5($sp)
+    lw $t5, 4($sp)
+    lw $t3, 3($sp)             
+    lw $t0, 2($sp)              
+    lw $t1, 1($sp)               
+    lw $t2, 0($sp)
+    addi $sp, $sp, 6
+
+    bne $v0, $zero, end_move_to_next_decrypted_word     # branch if delimiter reached
+    j move_to_next_decrypted_dword                      # next d_word not reached
+
+end_move_to_next_decrypted_word:
+    addi $t5, $t5, 1               # Move to the next character in the decrypted word
+    addi $t2, $t5, 0
+    j read_next_word
+    
+
+continue_match:
+
     bne $t6, $t3, skip_to_next_word_in_dictionary     # characters don't match which indicates this word in dictionary does not match
     j setup_check_next_dictionary_character
 
@@ -129,29 +181,31 @@ increment_and_match_to_dictionary:
 bit_masking_dictionary_parsing:
     addi $t9, $zero, 0          # Initialize $t9 to 0
     bne $a0, $zero, mask_f000     # If $a0 != 0, check next condition
-    addi $t9, $zero, 61440              # Load 32'hf000 into $t9
+    addi $t9, $zero, 65280              
+    sll $t9, $t9, 16               # Load 32'hff000000 into $t9
     addi $t7, $zero, 24
     j mask_construction_complete                      # Skip the rest
 
 mask_f000:
     addi $t0, $zero, 1          # Load 1 into temporary register $t0
     bne $a0, $t0, mask_0f00       # If $a0 != 1, check next condition
-    addi $t9, $zero, 3840              # Load 32'h0f00 into $t9
+    addi $t9, $zero, 65280              
+    sll $t9, $t9, 8                # Load 32'h00ff0000 into $t9
     addi $t7, $zero, 16
     j mask_construction_complete                      # Skip the rest
 
 mask_0f00:
     addi $t0, $zero, 2          # Load 2 into temporary register $t0
     bne $a0, $t0, mask_00f0       # If $a0 != 2, check next condition
-    addi $t9, $zero, 240              # Load 32'h00f0 into $t9
+    addi $t9, $zero, 65280              # Load 32'h0000ff00 into $t9
     addi $t7, $zero, 8
     j mask_construction_complete                      # Skip the rest
 
 mask_00f0:
     addi $t0, $zero, 3          # Load 3 into temporary register $t0
     bne $a0, $t0, mask_construction_complete          # If $a0 != 3, skip the rest
-    addi $t9, $zero, 15
-    addi $t7, $zero, 4
+    addi $t9, $zero, 255
+    addi $t7, $zero, 0
 
 mask_construction_complete:
     # t9 is the mask
@@ -170,8 +224,14 @@ skip_to_next_word_in_dictionary:
 continue_skip_to_next_word_in_dictionary:
     addi $t8, $t8, 1                                  # update pointer to next character in dictionary
     lwDict $t6, $t4, 0
+    # some shit going on with the bypassing here
+    # can't fix, noping for now
+    nop
+    nop
 
-    addi $sp, $sp, -6
+    addi $sp, $sp, -8
+    sw $t6, 7($sp)
+    sw $t8, 6($sp)
     sw $ra, 5($sp)
     sw $t5, 4($sp)
     sw $t3, 3($sp)             
@@ -181,6 +241,16 @@ continue_skip_to_next_word_in_dictionary:
     addi $a0, $t8, 0                                  # pass the pointer to dictionary m_word character
 
     jal bit_masking_dictionary_parsing
+
+    lw $t6, 7($sp)
+    lw $t8, 6($sp)
+    lw $ra, 5($sp)
+    lw $t5, 4($sp)
+    lw $t3, 3($sp)             
+    lw $t0, 2($sp)              
+    lw $t1, 1($sp)               
+    lw $t2, 0($sp)
+    addi $sp, $sp, 8
 
     addi $t0, $v0, 0                                  # mask
     addi $t1, $v1, 0                                  # shamt
@@ -199,18 +269,10 @@ continue_skip_to_next_word_in_dictionary:
     lw $ra, 2($sp)
     addi $sp, $sp, 3
 
-    lw $ra, 5($sp)
-    lw $t5, 4($sp)
-    lw $t3, 3($sp)             
-    lw $t0, 2($sp)              
-    lw $t1, 1($sp)               
-    lw $t2, 0($sp)
-    addi $sp, $sp, 6
-
     addi $t7, $zero, 2                                # delimiter
     bne $t6, $t7, skip_to_next_word_in_dictionary     # if not delimiter, move to next word in dict
 
-    addi $t4, $t4, 1                                  # point to next mem word in dict
+    addi $t8, $t8, 1                                  # point to next character in dict
     addi $t5, $t2, 0                                  # reset character pointer to start of word in encrypted message
 
     j read_next_word
