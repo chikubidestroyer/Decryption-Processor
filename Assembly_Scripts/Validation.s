@@ -18,6 +18,8 @@ SETUP_VALIDATION:
     sw $t0, 2($a0)
     addi $t0, $zero, 32 # \s
     sw $t0, 3($a0)
+    addi $t0, $zero, 116 # t
+    sw $t0, 4($a0)
 
     addi $sp, $zero, 1000
 
@@ -32,12 +34,12 @@ Validation:
     addi $t4, $zero, 0           # Pointer to dictionary m_word
     addi $t5, $t2, 0             # Pointer to character of current decrypted d_word
     addi $t8, $t4, 1             # Pointer to current character of d_word in dictionary
-    addi $r20, $r20, 1             # for debugging purposes
     j read_next_word
 
 read_next_word: # memory word
-    addi $r18, $r18, 1           # for debugging purposes
+    
     lw $t3, 0($t5)               # Load the next word from the input string
+    addi $r21, $t3, 0            # for debugging purposes, stores the last character read from input string
     bne $t3, $zero, process_char # If not null, process character
     j compute_result             # If null, compute result
 
@@ -60,7 +62,6 @@ process_char:
     lw $t1, 1($sp)               
     lw $t2, 0($sp)
     addi $sp, $sp, 6
-
     bne $v0, $zero, match_to_dictionary
     j update_stats                            # all characters in previous decrypted word matched to a word inthe dictionary
 
@@ -75,6 +76,7 @@ update_stats:
     j read_next_word
 
 match_to_dictionary:
+    addi $r20, $r20, 1             # for debugging purposes
     lwDict $t6, $t4, 0
     nop
     nop
@@ -114,7 +116,6 @@ match_to_dictionary:
     lw $a0, 1($sp)
     lw $ra, 2($sp)
     addi $sp, $sp, 3
-
     bne $t6, $zero, continue_match
 
     j update_stats_no_match
@@ -148,9 +149,9 @@ move_to_next_decrypted_dword:
     lw $t1, 1($sp)               
     lw $t2, 0($sp)
     addi $sp, $sp, 6
-
-    bne $v0, $zero, end_move_to_next_decrypted_word     # branch if delimiter reached
-    j move_to_next_decrypted_dword                      # next d_word not reached
+    addi $r22, $v0, 0              # for debugging purposes
+    bne $v0, $zero, move_to_next_decrypted_dword     # delimiter not reached
+    j end_move_to_next_decrypted_word                      # delimiter reached
 
 end_move_to_next_decrypted_word:
     addi $t5, $t5, 1               # Move to the next character in the decrypted word
@@ -239,6 +240,10 @@ continue_skip_to_next_word_in_dictionary:
     jal bit_masking_dictionary_parsing
 
     lw $t6, 7($sp)
+
+    addi $t0, $v0, 0                                  # mask
+    and $t6, $t0, $t6                                 # masking the loaded dictionary word
+
     lw $t8, 6($sp)
     lw $ra, 5($sp)
     lw $t5, 4($sp)
@@ -248,15 +253,11 @@ continue_skip_to_next_word_in_dictionary:
     lw $t2, 0($sp)
     addi $sp, $sp, 8
 
-    addi $t0, $v0, 0                                  # mask
-    addi $t1, $v1, 0                                  # shamt
-    and $t6, $t0, $t6                                 # masking the loaded dictionary word
-
     addi $sp, $sp, -3
     sw $ra, 2($sp)
     sw $a0, 1($sp)
     sw $a1, 0($sp)
-    addi $a0, $t1, 0
+    addi $a0, $v1, 0
     addi $a1, $t6, 0
     jal sra_variable                                 # shift bits to the right, t6 should contain the ascii of char in dict
     addi $t6, $v0, 0
