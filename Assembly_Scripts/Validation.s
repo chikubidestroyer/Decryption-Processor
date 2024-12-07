@@ -8,24 +8,16 @@
 
 SETUP_VALIDATION:
     addi $a0, $zero, 100
-    # encrypted message, original "what"
+    # encrypted message, original "the"
     # expected result = 100%
-    addi $t0, $zero, 119 # w
+    addi $t0, $zero, 116 # t
     sw $t0, 0($a0)
     addi $t0, $zero, 104 # h
     sw $t0, 1($a0)
-    addi $t0, $zero, 97 # a
+    addi $t0, $zero, 101 # e
     sw $t0, 2($a0)
-    addi $t0, $zero, 116 # t
+    addi $t0, $zero, 32 # \s
     sw $t0, 3($a0)
-    addi $t0, $zero, 32 # \s
-    sw $t0, 4($a0)
-    addi $t0, $zero, 105 # i
-    sw $t0, 5($a0)
-    addi $t0, $zero, 112 # p
-    sw $t0, 6($a0)
-    addi $t0, $zero, 32 # \s
-    sw $t0, 7($a0)
 
     addi $sp, $zero, 1000
 
@@ -39,11 +31,12 @@ Validation:
     addi $t2, $a0, 0             # Pointer to the beginning (m_word) of current d_word for decrypted message
     addi $t4, $zero, 0           # Pointer to dictionary m_word
     addi $t5, $t2, 0             # Pointer to character of current decrypted d_word
-    addi $t8, $t4, 0             # Pointer to current character of d_word in dictionary
-
-    j skip_to_next_word_in_dictionary
+    addi $t8, $t4, 1             # Pointer to current character of d_word in dictionary
+    addi $r20, $r20, 1             # for debugging purposes
+    j read_next_word
 
 read_next_word: # memory word
+    addi $r18, $r18, 1           # for debugging purposes
     lw $t3, 0($t5)               # Load the next word from the input string
     bne $t3, $zero, process_char # If not null, process character
     j compute_result             # If null, compute result
@@ -72,6 +65,7 @@ process_char:
     j update_stats                            # all characters in previous decrypted word matched to a word inthe dictionary
 
 update_stats:
+    addi $r16, $r16, 1             # for debugging purposes, indicates the number of characters matched
     addi $t0, $t0, 1               # Increment matched d_word count
     addi $t1, $t1, 1               # Increment total d_word count
     addi $t2, $t5, 1               # Increment dictionary pointer
@@ -126,9 +120,10 @@ match_to_dictionary:
     j update_stats_no_match
 
 update_stats_no_match:
+    addi $17, $17, 1               # for debugging purposes
     addi $t1, $t1, 1               # Increment total d_word count
     addi $t4, $zero, 0                        # this indicates that input string word is not found in the dictionary
-    addi $t8, $zero, 0
+    addi $t8, $zero, 1
     j move_to_next_decrypted_dword
 
 move_to_next_decrypted_dword:
@@ -176,6 +171,7 @@ setup_check_next_dictionary_character:
 increment_and_match_to_dictionary:
     addi $t8, $t8, 1
     addi $t5, $t5, 1
+    addi $r19, $r19, 1                                # for debugging purposes, indicates the consecutive character matches
     j read_next_word
     
 bit_masking_dictionary_parsing:
@@ -274,7 +270,6 @@ continue_skip_to_next_word_in_dictionary:
 
     addi $t8, $t8, 1                                  # point to next character in dict
     addi $t5, $t2, 0                                  # reset character pointer to start of word in encrypted message
-
     j read_next_word
 
 # inputs: a0 = shamt, a1 = register shifted
@@ -285,8 +280,8 @@ sra_variable:
     jr $ra
 
 continue_sra_shifter:
-    sra $a1, $a1, 1
-    addi $a0, $a0, -1
+    sra $a1, $a1, 8
+    addi $a0, $a0, -8
     j sra_variable
 
 
@@ -296,8 +291,8 @@ compute_result:
     j finalize                         # If no words, skip calculation
 
 compute_percentage:
-    addi $t7, $zero, 100       # Initialize $t0 to 0 (default: no matches)
-    mul $t7, $t0, $t7           # Compute percentage: (matched / total) * 100
+    addi $t7, $zero, 100       
+    mul $t7, $t0, $t7           # matched* 100
     div $t7, $t7, $t1           # Divide by total words
     add $v1, $t7, $zero        # Store result in $v1
     j finalize
@@ -330,4 +325,4 @@ check_in_range_return:
     jr $ra                   # Return to caller
 
 end_test:
-    nop
+    j end_test
