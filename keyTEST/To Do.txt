@@ -1,0 +1,3 @@
+To Do:
+1. Implement Word detection - i think space bar putting special character would work
+2. Enter into memory using button
