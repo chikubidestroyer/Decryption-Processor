@@ -33,8 +33,10 @@
  *
  **/
 
-module Wrapper_tb #(parameter FILE = "BF");
-
+module Wrapper_tb #(parameter FILE = "BF") (
+    input wire [7:0] char_buffer_data,
+    input wire char_buffer_we
+);
 	// FileData
 	localparam DIR = "Test Files/";
 	localparam MEM_DIR = "Memory Files/";
@@ -79,6 +81,10 @@ module Wrapper_tb #(parameter FILE = "BF");
 			cycles = 0,
 			reg_to_test = 0;
 
+	// Add to module port list
+	
+
+
 	// Main Processing Unit
 	processor CPU(.clock(clock), .reset(reset), 
 								
@@ -110,12 +116,30 @@ module Wrapper_tb #(parameter FILE = "BF");
 		.ctrl_writeReg(rd),
 		.ctrl_readRegA(rs1_in), .ctrl_readRegB(rs2), 
 		.data_writeReg(rData), .data_readRegA(regA), .data_readRegB(regB));
-						
+
+	wire [31:0] finalData;
+	wire [11:0] finalAddr;
+	wire finalWEn;
+
+	reg [7:0] char_write_counter = 0;
+
+	// Update char_write_counter when writing characters
+	always @(posedge clock) begin
+		if (char_buffer_we) begin
+			if (char_write_counter < 108) // 108 is buffer size (12*9)
+				char_write_counter <= char_write_counter + 1;
+		end
+	end
+
+	assign finalData = char_buffer_we ? {24'b0,char_buffer_data} : memDataIn;
+	assign final_addr = char_buffer_we ? (12'd1500 + char_write_counter) : memAddr[11:0];
+	assign finalWEn = char_buffer_we ? 1'b1 : mwe;
+
 	// Processor Memory (RAM)
 	RAM ProcMem(.clk(clock), 
-		.wEn(mwe), 
-		.addr(memAddr[11:0]), 
-		.dataIn(memDataIn), 
+		.wEn(finalWEn), 
+		.addr(final_addr[11:0]), 
+		.dataIn(finalData), 
 		.dataOut(memDataOut));
 
 	localparam DICT_FILE = "./DICTMEM/dictionary";

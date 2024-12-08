@@ -85,10 +85,10 @@ module VGAController(
 	
 
 	// Character buffer parameters
-	localparam BUFFER_WIDTH = 12;  // 80 characters per row
-	localparam BUFFER_HEIGHT = 9; // 30 rows of characters
-	localparam CHAR_WIDTH = 50;    // Character width in pixels
-	localparam CHAR_HEIGHT = 50;   // Character height in pixels
+	localparam BUFFER_WIDTH = 12;  // 12 char per row 
+	localparam BUFFER_HEIGHT = 9; // 9 rows in total
+	localparam CHAR_WIDTH = 50;   
+	localparam CHAR_HEIGHT = 50;   
 	
 	// Character buffer to store ASCII codes
 	reg [7:0] char_buffer [0:BUFFER_WIDTH*BUFFER_HEIGHT-1];
@@ -97,9 +97,6 @@ module VGAController(
 	wire [5:0] x_within_char = x % CHAR_WIDTH;
 	wire [5:0] y_within_char = y % CHAR_HEIGHT;
 	
-	
-	//debug leds
-		//assign LED[11:0] = char_index;
 		wire onOff;
 		wire [7:0] rx_data;
 		reg [7:0] key_id;
@@ -109,7 +106,6 @@ module VGAController(
 	// Modified color output
 	wire[BITS_PER_COLOR-1:0] colorOut;
 	
-
 	// Initialize buffer with spaces
 	integer i;
 	initial begin
@@ -132,8 +128,6 @@ module VGAController(
 				key_id <= rx_data;
 			end
 		end
-		
-
 	
 	// ASCII lookup RAM instantiation
 	RAM #(
@@ -146,9 +140,6 @@ module VGAController(
 		.addr(key_id),                    // Using key_id as address
 		.dataOut(output_ascii),           // ASCII output
 		.wEn(1'b0)); 
-    // assign LED[15:8] = rx_data;
-	// assign LED[7:0] = output_ascii;
-
 
 	// Handle keyboard input
 	reg [7:0] next_write_index = 0;
@@ -199,21 +190,30 @@ module VGAController(
 		endcase
 	end
 
-	// assign LED[1:0] = write_state;  // Show current state
-	// assign LED[3:2] = {read_data, err};  // Show read_data and err signals
-	// assign LED[11:4] = output_ascii;  // Show current ASCII value
-	// assign LED[13:12] = {2{write_state == DO_WRITE}};  // Light up when in DO_WRITE state
+	reg [4:0] shiftamt;
+	reg prevBTN;
+	always@(posedge clk) begin
+		prevBTN <= BTNU;
+		if(shiftamt >= 26) begin
+			shiftamt <= 0;
+		end
+		else if(BTNU && !prevBTN) begin
+			shiftamt <= shiftamt + 1;
+		end
+	end
+	//assign LED[4:0] = shiftamt;
+
+
 	// Sprite lookup address calculation
 	wire [17:0] sprite_addr, char_offset;
 	wire [11:0] char_index = (y/50) * BUFFER_WIDTH + (x/50);
 	assign char_offset = ({24'b0, char_buffer[char_index]}-8'd33);
 	assign sprite_addr = (char_offset*2500)+(50*y_within_char + x_within_char);
-	//assign LED[7:0] = char_buffer[1][7:0];  // Show first character
-	//assign LED[15:8] = char_buffer[2][7:0];  // Show  second character
+
 	assign colorOut = active ? 
 					 (x < (BUFFER_WIDTH * CHAR_WIDTH) && y < (BUFFER_HEIGHT * CHAR_HEIGHT) ?
 					   (onOff ? colorData : 12'hfff) : 12'hfff) : 12'd0;
-	//assign LED[15:0] = sprite_addr[15:0];
+
 	// Modify sprite lookup to use the buffer
 	RAM #(
 		.DEPTH(94*2500),
@@ -226,9 +226,54 @@ module VGAController(
 		.dataOut(onOff),
 		.wEn(1'b0));
 
-	
-	
+	// Add state machine for testing
+	reg [1:0] test_state = 0;
+	localparam TEST_IDLE = 2'b00;
+	localparam TEST_WRITING = 2'b01;
+	localparam TEST_DONE = 2'b10;
 
+	// Add test counter
+	reg [7:0] test_counter = 0;
+
+	// Debug signals
+	wire [7:0] mem_out;
+
+	// State machine for testing
+	always @(posedge clk) begin
+		case(test_state)
+			TEST_IDLE: begin
+				if(BTND) begin  // Start test when BTNU pressed
+					test_state <= TEST_WRITING;
+					test_counter <= 0;
+				end
+			end
+			
+			TEST_WRITING: begin
+				if(test_counter < 108) begin
+					test_counter <= test_counter + 1;
+				end else begin
+					test_state <= TEST_DONE;
+				end
+			end
+			
+			TEST_DONE: begin
+				// Stay in done state
+			end
+		endcase
+	end
+
+
+
+	Wrapper_tb wrapper(
+		.char_buffer_data(char_buffer[char_index]),
+		.char_buffer_we(write_state == DO_WRITE)
+	);
+
+
+	assign LED[1:0] = test_state;  // Show current state
+	assign LED[9:2] = test_counter;  // Show current counter value
+	assign LED[15:10] = char_buffer[test_counter][5:0];  // Show part of current character
+	
 endmodule
 
 
