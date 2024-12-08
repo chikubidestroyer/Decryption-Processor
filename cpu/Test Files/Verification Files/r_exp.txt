@@ -1,2 +1,0 @@
-num cycles:200
-r0=0
