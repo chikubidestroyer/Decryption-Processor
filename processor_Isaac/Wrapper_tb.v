@@ -35,7 +35,8 @@
 
 module Wrapper_tb #(parameter FILE = "BF") (
     input wire [7:0] char_buffer_data,
-    input wire char_buffer_we
+    input wire char_buffer_we,
+	input wire [4:0] shift_amt_data
 );
 	// FileData
 	localparam DIR = "Test Files/";
@@ -111,11 +112,16 @@ module Wrapper_tb #(parameter FILE = "BF") (
 		.dataOut(instData));
 	
 	// Register File
+	wire reg6_we = (shift_amt_data != 0); // Write when shift amount changes
+    wire final_rwe = reg6_we || rwe;
+	wire [4:0] final_rd = reg6_we ? 5'd6 : rd;
+	wire [31:0] final_rData = reg6_we ? {27'b0, shift_amt_data} : rData;
+
 	regfile RegisterFile(.clock(clock), 
-		.ctrl_writeEnable(rwe), .ctrl_reset(reset), 
-		.ctrl_writeReg(rd),
+		.ctrl_writeEnable(final_rwe), .ctrl_reset(reset), 
+		.ctrl_writeReg(final_rd),
 		.ctrl_readRegA(rs1_in), .ctrl_readRegB(rs2), 
-		.data_writeReg(rData), .data_readRegA(regA), .data_readRegB(regB));
+		.data_writeReg(final_rData), .data_readRegA(regA), .data_readRegB(regB));
 
 	wire [31:0] finalData;
 	wire [11:0] finalAddr;
