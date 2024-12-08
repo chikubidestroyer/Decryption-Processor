@@ -31,7 +31,7 @@ with open('dictionary.mem', 'w') as file:
         for character in word:
             print(current_line, len(current_line))
             assert len(current_line) < 32
-            binary_formatted_char = padToEight(format(ord(character), 'b'))
+            binary_formatted_char = padToEight(format(ord(character.upper()), 'b'))
             assert len(binary_formatted_char) == 8
             current_line += str(binary_formatted_char)
             if len(current_line) == 32:
