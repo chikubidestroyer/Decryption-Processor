@@ -8,22 +8,44 @@
 
 SETUP_VALIDATION:
     addi $a0, $zero, 100
-    # encrypted message, original "the"
+    # encrypted message, original "what is your name"
     # expected result = 100%
-    addi $t0, $zero, 116 # t
+    addi $t0, $zero, 119 # w
     sw $t0, 0($a0)
-    addi $t0, $zero, 104 # h
+    addi $t0, $zero, 104  # h
     sw $t0, 1($a0)
-    addi $t0, $zero, 101 # e
+    addi $t0, $zero, 97  # a
     sw $t0, 2($a0)
-    addi $t0, $zero, 32 # \s
+    addi $t0, $zero, 116  # t
     sw $t0, 3($a0)
-    addi $t0, $zero, 116 # t
+    addi $t0, $zero, 32  # \s
     sw $t0, 4($a0)
-    addi $t0, $zero, 104 # h
+    addi $t0, $zero, 105  # i
     sw $t0, 5($a0)
-    addi $t0, $zero, 32 # \s
+    addi $t0, $zero, 115  # s
     sw $t0, 6($a0)
+    addi $t0, $zero, 32  # \s
+    sw $t0, 7($a0)
+    addi $t0, $zero, 121  # y
+    sw $t0, 8($a0)
+    addi $t0, $zero, 111  # o
+    sw $t0, 9($a0)
+    addi $t0, $zero, 117  # u
+    sw $t0, 10($a0)
+    addi $t0, $zero, 114   # r
+    sw $t0, 11($a0)
+    addi $t0, $zero, 32  # \s
+    sw $t0, 12($a0)
+    addi $t0, $zero, 110  # n
+    sw $t0, 13($a0)
+    addi $t0, $zero, 97  # a
+    sw $t0, 14($a0)
+    addi $t0, $zero, 109  # m
+    sw $t0, 15($a0)
+    addi $t0, $zero, 101  # e
+    sw $t0, 16($a0)
+    addi $t0, $zero, 32  # \s
+    sw $t0, 17($a0)
 
 
 
@@ -226,7 +248,7 @@ match_to_dictionary:
 
     nop
     nop
-    add $r17, $t5, $zero
+    add $r17, $t8, $zero
     
     add $r18, $zero, $t6
     addi $sp, $sp, -8
@@ -298,7 +320,6 @@ move_to_next_decrypted_dword:
     lw $t1, 1($sp)               
     lw $t2, 0($sp)
     addi $sp, $sp, 6
-#    addi $r22, $v0, 0              # for debugging purposes
     bne $v0, $zero, move_to_next_decrypted_dword     # delimiter not reached
     j end_move_to_next_decrypted_word                      # delimiter reached
 
@@ -433,7 +454,11 @@ continue_skip_to_next_word_in_dictionary:
 
     addi $t7, $zero, 0                                # indicates in range
     bne $v0, $t7, skip_to_next_word_in_dictionary     # if not delimiter, move to next word in dict
-
+    addi $t9, $zero, 3
+    bne $t9, $t8, continue_continue_skip_to_next_word_in_dictionary   # branch if we haven't reached the end of the m_word for dictionary
+    addi $t8, $zero, -1
+    addi $t4, $t4, 1                             # point to next mem word in dict
+continue_continue_skip_to_next_word_in_dictionary:
     addi $t8, $t8, 1                                  # point to next character in dict
     addi $t5, $t2, 0                                  # reset character pointer to start of word in encrypted message
     addi $a2, $zero, 1                                # indicates matching incomplete
