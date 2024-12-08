@@ -36,7 +36,10 @@
 module Wrapper_tb #(parameter FILE = "BF") (
     input wire [7:0] char_buffer_data,
     input wire char_buffer_we,
-	input wire [4:0] shift_amt_data
+	input wire [4:0] shift_amt_data,
+	input wire [1:0] program_sel,
+	input wire [11:0] read_addr,
+	output wire [31:0] read_data
 );
 	// FileData
 	localparam DIR = "Test Files/";
@@ -106,7 +109,12 @@ module Wrapper_tb #(parameter FILE = "BF") (
 		.q_dictmem(DictMemDataOut)); 
 	
 	// Instruction Memory (ROM)
-	ROM #(.MEMFILE({DIR, MEM_DIR, FILE, ".mem"}))
+
+	wire [23:0] program_name;
+	assign program_name = (program_select == 2'b01) ? "FINAL_EN" :
+						(program_select == 2'b10) ? "FINAL_BF" :
+						"BF";
+	ROM #(.MEMFILE({DIR, MEM_DIR, program_name, ".mem"}))
 	InstMem(.clk(clock), 
 		.addr(instAddr[11:0]), 
 		.dataOut(instData));
@@ -147,6 +155,8 @@ module Wrapper_tb #(parameter FILE = "BF") (
 		.addr(final_addr), 
 		.dataIn(finalData), 
 		.dataOut(memDataOut));
+
+	assign read_data = memDataOut;
 
 	localparam DICT_FILE = "./DICTMEM/dictionary";
 

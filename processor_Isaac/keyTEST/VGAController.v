@@ -226,16 +226,57 @@ module VGAController(
 		.dataOut(onOff),
 		.wEn(1'b0));
 
+	reg [1:0] program_select;
+	reg prev_BTNL, prev_BTNR;
+
+	always @(posedge clk) begin
+		prev_BTNL <= BTNL;
+		prev_BTNR <= BTNR;
+		
+		if (BTNL && !prev_BTNL) begin  // BTNL pressed
+			program_select <= 2'b01;    // encrypt
+		end else if (BTNR && !prev_BTNR) begin  // BTNR pressed
+			program_select <= 2'b10;    // decrypt
+		end
+	end
+
+	reg reading_mem = 0;
+	reg [7:0] readCounter;
+	wire [31:0] mem_read_data;
+
+	reg [1:0] mem_read_state;
+	localparam MEM_IDLE = 2'b00;
+	localparam MEM_READ = 2'b01;
+
+	always @(posedge clk) begin
+		case(mem_read_state)
+			MEM_IDLE: begin
+				if(BTND) begin
+					mem_read_state <= MEM_READ;
+					readCounter <= 0;
+				end
+			end
+			MEM_READ: begin
+				if(readCounter < 108) begin
+					char_buffer[readCounter] <= mem_read_data[7:0];
+					readCounter <= readCounter + 1;
+				end else begin
+					mem_read_state <= MEM_IDLE;
+				end
+			end
+		endcase
+	end
+	
 	Wrapper_tb wrapper(
 		.char_buffer_data(char_buffer[char_index]),
-		.char_buffer_we(write_state == DO_WRITE)
+		.char_buffer_we(write_state == DO_WRITE),
+		.program_sel(program_select),
+		.shift_amt_data(shiftamt),
+		.read_addr(12'd5500 + readCounter),
+		.read_data(mem_read_data)
 	);
-
-
-	assign LED[1:0] = test_state;  // Show current state
-	assign LED[9:2] = test_counter;  // Show current counter value
-	assign LED[15:10] = char_buffer[test_counter][5:0];  // Show part of current character
 	
+
 endmodule
 
 
