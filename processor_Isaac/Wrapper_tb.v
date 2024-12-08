@@ -138,7 +138,7 @@ module Wrapper_tb #(parameter FILE = "BF") (
 	// Processor Memory (RAM)
 	RAM ProcMem(.clk(clock), 
 		.wEn(finalWEn), 
-		.addr(final_addr[11:0]), 
+		.addr(final_addr), 
 		.dataIn(finalData), 
 		.dataOut(memDataOut));
 

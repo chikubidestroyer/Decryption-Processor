@@ -13,7 +13,7 @@ module VGAController(
 	inout ps2_data);
 	
 	// Lab Memory Files Location
-	localparam FILES_PATH = "C:/Users/chena/keytest/";
+	localparam FILES_PATH = "C:/Users/azc4/Decryption-Processor/processor_Isaac/keyTEST/";
 
 	// Clock divider 100 MHz -> 25 MHz
 	wire clk25; // 25MHz clock
@@ -58,7 +58,7 @@ module VGAController(
 	wire[PALETTE_ADDRESS_WIDTH-1:0] colorAddr; 	 // Color address for the color palette
 	assign imgAddress = x + 640*y;				 // Address calculated coordinate
 
-	RAM #(		
+	RAM_VGA #(		
 		.DEPTH(PIXEL_COUNT), 				     // Set RAM depth to contain every pixel
 		.DATA_WIDTH(PALETTE_ADDRESS_WIDTH),      // Set data width according to the color palette
 		.ADDRESS_WIDTH(PIXEL_ADDRESS_WIDTH),     // Set address with according to the pixel count
@@ -72,7 +72,7 @@ module VGAController(
 	// Color Palette to Map Color Address to 12-Bit Color
 	wire[BITS_PER_COLOR-1:0] colorData; // 12-bit color data at current pixel
 
-	RAM #(
+	RAM_VGA #(
 		.DEPTH(PALETTE_COLOR_COUNT), 		       // Set depth to contain every color		
 		.DATA_WIDTH(BITS_PER_COLOR), 		       // Set data width according to the bits per color
 		.ADDRESS_WIDTH(PALETTE_ADDRESS_WIDTH),     // Set address width according to the color count
@@ -130,7 +130,7 @@ module VGAController(
 		end
 	
 	// ASCII lookup RAM instantiation
-	RAM #(
+	RAM_VGA #(
 		.DEPTH(256),         
 		.DATA_WIDTH(8),      
 		.ADDRESS_WIDTH(8),    
@@ -215,7 +215,7 @@ module VGAController(
 					   (onOff ? colorData : 12'hfff) : 12'hfff) : 12'd0;
 
 	// Modify sprite lookup to use the buffer
-	RAM #(
+	RAM_VGA #(
 		.DEPTH(94*2500),
 		.DATA_WIDTH(1),
 		.ADDRESS_WIDTH(18),
@@ -225,44 +225,6 @@ module VGAController(
 		.addr(sprite_addr),
 		.dataOut(onOff),
 		.wEn(1'b0));
-
-	// Add state machine for testing
-	reg [1:0] test_state = 0;
-	localparam TEST_IDLE = 2'b00;
-	localparam TEST_WRITING = 2'b01;
-	localparam TEST_DONE = 2'b10;
-
-	// Add test counter
-	reg [7:0] test_counter = 0;
-
-	// Debug signals
-	wire [7:0] mem_out;
-
-	// State machine for testing
-	always @(posedge clk) begin
-		case(test_state)
-			TEST_IDLE: begin
-				if(BTND) begin  // Start test when BTNU pressed
-					test_state <= TEST_WRITING;
-					test_counter <= 0;
-				end
-			end
-			
-			TEST_WRITING: begin
-				if(test_counter < 108) begin
-					test_counter <= test_counter + 1;
-				end else begin
-					test_state <= TEST_DONE;
-				end
-			end
-			
-			TEST_DONE: begin
-				// Stay in done state
-			end
-		endcase
-	end
-
-
 
 	Wrapper_tb wrapper(
 		.char_buffer_data(char_buffer[char_index]),
