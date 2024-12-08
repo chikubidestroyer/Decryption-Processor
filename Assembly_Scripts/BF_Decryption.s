@@ -11,9 +11,9 @@ SETUP_BF_DECRYPT:
     addi $t0, $zero, 0    # current shift amount
     addi $t2, $zero, 0    # max score for a decryption
     addi $t3, $zero, 0    # shift amount for max score for a decryption
-    addi $t0, $zero, 102  # i
+    addi $t0, $zero, 72  # I
     sw $t0, 0($a0)
-    addi $t0, $zero, 112  # s
+    addi $t0, $zero, 82  # S
     sw $t0, 1($a0)
     addi $t0, $zero, 32  # \s
     sw $t0, 2($a0)
