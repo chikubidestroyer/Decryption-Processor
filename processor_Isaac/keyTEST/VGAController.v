@@ -194,17 +194,6 @@ module VGAController(
 	
 	//assign LED[4:0] = shiftamt;
 
-
-	// Sprite lookup address calculation
-	wire [17:0] sprite_addr, char_offset;
-	wire [11:0] char_index = (y/50) * BUFFER_WIDTH + (x/50);
-	assign char_offset = ({24'b0, char_buffer[char_index]}-8'd33);
-	assign sprite_addr = (char_offset*2500)+(50*y_within_char + x_within_char);
-
-	assign colorOut = active ? 
-					 (x < (BUFFER_WIDTH * CHAR_WIDTH) && y < (BUFFER_HEIGHT * CHAR_HEIGHT) ?
-					   (onOff ? colorData : 12'hfff) : 12'hfff) : 12'd0;
-
 	// Modify sprite lookup to use the buffer
 	RAM_VGA #(
 		.DEPTH(94*2500),
@@ -220,20 +209,25 @@ module VGAController(
 	reg [1:0] program_select;
 	reg [1:0] cpu_en;
 	reg [4:0] shiftamt;
-	reg prevBTNU, prev_BTNL, prev_BTNR;
+	reg buffer_select = 0;
+	reg prevBTNU, prev_BTNL, prev_BTNR, prev_BTND;
 
 	localparam CPU_IDLE = 2'b00;
 	localparam CPU_WRITE = 2'b01;
 	localparam CPU_EXEC = 2'b10;
+	initial begin
+		cpu_en <= cpu_en<=CPU_WRITE;
+	end
 	always@(posedge clk) begin
 		prevBTNU <= BTNU;
 		prev_BTNL <= BTNL;
 		prev_BTNR <= BTNR;
+		prev_BTND <= BTND;
 		
 		if (BTNL && !prev_BTNL) begin  // BTNL pressed
 			program_select <= 2'b01;    // encrypt
 			shiftamt <= 0;              // Reset shift amount
-			cpu_en<=CPU_WRITE;
+			cpu_en<=CPU_EXEC;
 		end 
 		else if (BTNR && !prev_BTNR) begin  // BTNR pressed
 			program_select <= 2'b10;    // decrypt
@@ -249,6 +243,9 @@ module VGAController(
 			else begin
 				shiftamt <= shiftamt + 1;
 			end
+		end
+		else if (BTND && !prev_BTND) begin
+			buffer_select <= ~buffer_select;
 		end
 	end
 
@@ -296,6 +293,16 @@ module VGAController(
 		.read_regA(reg6test),
 		.read_ram(ram_test)
 	);
+
+		// Sprite lookup address calculation
+	wire [17:0] sprite_addr, char_offset;
+	wire [11:0] char_index = (y/50) * BUFFER_WIDTH + (x/50);
+	assign char_offset = ({24'b0, buffer_select ? read_buffer[char_index] : char_buffer[char_index]}-8'd33);
+	assign sprite_addr = (char_offset*2500)+(50*y_within_char + x_within_char);
+
+	assign colorOut = active ? 
+					 (x < (BUFFER_WIDTH * CHAR_WIDTH) && y < (BUFFER_HEIGHT * CHAR_HEIGHT) ?
+					   (onOff ? colorData : 12'hfff) : 12'hfff) : 12'd0;
 	//assign LED[15:0] = reg6test[15:0];
 	//assign LED[4:0] = shiftamt;
 	assign LED[7:0] = char_buffer[curr_index];

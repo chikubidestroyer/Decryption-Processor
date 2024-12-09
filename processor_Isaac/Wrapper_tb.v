@@ -135,7 +135,7 @@ module Wrapper_tb #(parameter FILE = "BF") (
 	wire [31:0] final_rData = reg6_we ? {27'b0, shift_amt_data} : rData;
 	wire [4:0] read_6 = 5'd28;
 	wire [4:0] final_read_reg_a_addr = rs1;
-	assign read_regA = regA;
+	assign read_regA = {31'b0, final_rd == 5'd28 && final_rData == 32'b1};
 
 	regfile RegisterFile(.clock(clock), 
 		.ctrl_writeEnable(final_rwe), .ctrl_reset(reset), 
@@ -148,20 +148,20 @@ module Wrapper_tb #(parameter FILE = "BF") (
 	wire finalWEn;
 
 	reg [7:0] char_write_counter = 0;
-
+	localparam CPU_IDLE = 2'b00;
+	localparam CPU_WRITE = 2'b01;
+	localparam CPU_EXEC = 2'b10;
 	// Update char_write_counter when writing characters
 	always @(posedge clock) begin
-		if (char_buffer_we) begin
+		if (cpu_en == CPU_WRITE) begin
 			if (char_write_counter < 108) // 108 is buffer size (12*9)
 				char_write_counter <= char_write_counter + 1;
 		end
 	end
-	localparam CPU_IDLE = 2'b00;
-	localparam CPU_WRITE = 2'b01;
-	localparam CPU_EXEC = 2'b10;
+	
 	assign finalData = (cpu_en == CPU_WRITE) ? {24'b0, char_buffer_data} : (cpu_en == CPU_EXEC) ? memDataIn : 32'b0;
 	assign final_addr = (cpu_en == CPU_WRITE) ? (12'd1500 + char_write_counter) : (cpu_en == CPU_EXEC) ? memAddr[11:0] : read_addr;
-	assign finalWEn = (cpu_en == CPU_WRITE) ? 1'b1 : (cpu_en == CPU_EXEC) ? mew : 1'b0;
+	assign finalWEn = (cpu_en == CPU_WRITE) ? 1'b1 : (cpu_en == CPU_EXEC) ? mwe : 1'b0;
 	assign read_ram = finalData[7:0];
 
 	// Processor Memory (RAM)
