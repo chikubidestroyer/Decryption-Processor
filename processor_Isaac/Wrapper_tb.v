@@ -41,7 +41,8 @@ module Wrapper_tb #(parameter FILE = "BF") (
 	input wire [11:0] read_addr,
 	output wire [31:0] read_data,
 	output wire [31:0] read_regA,
-	output wire [7:0] read_ram
+	output wire [7:0] read_ram,
+	output wire [15:0] LED
 );
 	// FileData
 	localparam DIR = "Test Files/";
@@ -89,10 +90,14 @@ module Wrapper_tb #(parameter FILE = "BF") (
 
 	// Add to module port list
 	
+	wire cpu_reset;
+	assign cpu_reset = ~(cpu_en == CPU_EXEC);
 
+	assign LED[7:0] = read_ram;
+	assign LED[15:8] = shift_amt_data;
 
 	// Main Processing Unit
-	processor CPU(.clock(clock), .reset(reset), 
+	processor CPU(.clock(clock), .reset(cpu_reset), 
 								
 		// ROM
 		.address_imem(instAddr), .q_imem(instData),

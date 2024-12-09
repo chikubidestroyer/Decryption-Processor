@@ -23,6 +23,11 @@ module VGAController(
 	always @(posedge clk) begin
 		pixCounter <= pixCounter + 1; // Since the reg is only 3 bits, it will reset every 8 cycles
 	end
+	reg[1:0] cpu_clock = 0;      // Pixel counter to divide the clock
+    assign clk625 = cpu_clock[1]; // Set the clock high whenever the second bit (2) is high
+	always @(posedge clk25) begin
+		cpu_clock <= cpu_clock + 1; // Since the reg is only 3 bits, it will reset every 8 cycles
+	end
 
 	// VGA Timing Generation for a Standard VGA Screen
 	localparam 
@@ -215,9 +220,13 @@ module VGAController(
 	localparam CPU_IDLE = 2'b00;
 	localparam CPU_WRITE = 2'b01;
 	localparam CPU_EXEC = 2'b10;
+	reg cpu_done;
 	initial begin
-		cpu_en <= cpu_en<=CPU_WRITE;
+		cpu_en <=CPU_WRITE;
 	end
+	// always @(negedge clk) begin
+	// 	cpu_done <= reg6test == 32'd1;
+	// end
 	always@(posedge clk) begin
 		prevBTNU <= BTNU;
 		prev_BTNL <= BTNL;
@@ -235,6 +244,7 @@ module VGAController(
 		end
 		else if(reg6test == 32'd1) begin
 			cpu_en <= CPU_IDLE;
+			cpu_done <= reg6test == 32'd1;
 		end
 		else if (BTNU && !prevBTNU) begin   // BTNU pressed
 			if (shiftamt >= 26) begin
@@ -257,7 +267,7 @@ module VGAController(
 	localparam MEM_IDLE = 2'b00;
 	localparam MEM_READ = 2'b01;
 
-	always @(posedge clk) begin
+	always @(posedge clk625) begin
 		case(mem_read_state)
 			MEM_IDLE: begin
 				if(BTND) begin
@@ -283,15 +293,18 @@ module VGAController(
 	end
 	wire [31:0] reg6test;
 	wire [7:0] ram_test;
-	Wrapper_tb wrapper(
+	Wrapper wrap(
 		.char_buffer_data(char_buffer[curr_index]),
 		.cpu_en(cpu_en),
 		.program_sel(program_select),
 		.shift_amt_data(shiftamt),
-		.read_addr(12'd5500 + readCounter),
+		.read_addr(12'3000 + readCounter),
 		.read_data(mem_read_data),
 		.read_regA(reg6test),
-		.read_ram(ram_test)
+		.read_ram(ram_test),
+		.LED(LED),
+		.clock(clk625),
+		.reset()
 	);
 
 		// Sprite lookup address calculation
@@ -305,9 +318,11 @@ module VGAController(
 					   (onOff ? colorData : 12'hfff) : 12'hfff) : 12'd0;
 	//assign LED[15:0] = reg6test[15:0];
 	//assign LED[4:0] = shiftamt;
-	assign LED[7:0] = char_buffer[curr_index];
-	assign LED[14:8] = ram_test;
-	
+	// assign LED[7:0] = char_buffer[curr_index];
+	// assign LED[15] = cpu_done;
+	// assign LED[14] = cpu_en == CPU_EXEC;
+	//assign LED[7:0] = read_buffer[0];
+	//assign LED[15:8] = read_buffer[1];
 endmodule
 
 
