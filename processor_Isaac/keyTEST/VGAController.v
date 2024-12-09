@@ -191,17 +191,7 @@ module VGAController(
 		endcase
 	end
 
-	reg [4:0] shiftamt;
-	reg prevBTN;
-	always@(posedge clk) begin
-		prevBTN <= BTNU;
-		if(shiftamt >= 26) begin
-			shiftamt <= 0;
-		end
-		else if(BTNU && !prevBTN) begin
-			shiftamt <= shiftamt + 1;
-		end
-	end
+	
 	//assign LED[4:0] = shiftamt;
 
 
@@ -228,17 +218,28 @@ module VGAController(
 		.wEn(1'b0));
 
 	reg [1:0] program_select;
-	reg prev_BTNL, prev_BTNR;
+	reg [4:0] shiftamt;
+	reg prevBTNU, prev_BTNL, prev_BTNR;
 
-	always @(posedge clk) begin
+	always@(posedge clk) begin
+		prevBTNU <= BTNU;
 		prev_BTNL <= BTNL;
 		prev_BTNR <= BTNR;
 		
 		if (BTNL && !prev_BTNL) begin  // BTNL pressed
 			program_select <= 2'b01;    // encrypt
-			shiftamt <= 0;
-		end else if (BTNR && !prev_BTNR) begin  // BTNR pressed
+			shiftamt <= 0;              // Reset shift amount
+		end 
+		else if (BTNR && !prev_BTNR) begin  // BTNR pressed
 			program_select <= 2'b10;    // decrypt
+		end
+		else if (BTNU && !prevBTNU) begin   // BTNU pressed
+			if (shiftamt >= 26) begin
+				shiftamt <= 0;
+			end
+			else begin
+				shiftamt <= shiftamt + 1;
+			end
 		end
 	end
 
