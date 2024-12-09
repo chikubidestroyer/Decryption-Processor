@@ -222,6 +222,9 @@ module VGAController(
 	reg [4:0] shiftamt;
 	reg prevBTNU, prev_BTNL, prev_BTNR;
 
+	localparam CPU_IDLE = 2'b00;
+	localparam CPU_WRITE = 2'b01;
+	localparam CPU_EXEC = 2'b10;
 	always@(posedge clk) begin
 		prevBTNU <= BTNU;
 		prev_BTNL <= BTNL;
@@ -230,11 +233,14 @@ module VGAController(
 		if (BTNL && !prev_BTNL) begin  // BTNL pressed
 			program_select <= 2'b01;    // encrypt
 			shiftamt <= 0;              // Reset shift amount
-			cpu_en<=1;
+			cpu_en<=CPU_WRITE;
 		end 
 		else if (BTNR && !prev_BTNR) begin  // BTNR pressed
 			program_select <= 2'b10;    // decrypt
-			cpu_en <= 1;
+			cpu_en <= CPU_EXEC;
+		end
+		else if(reg6test == 32'd1) begin
+			cpu_en <= CPU_IDLE;
 		end
 		else if (BTNU && !prevBTNU) begin   // BTNU pressed
 			if (shiftamt >= 26) begin
@@ -282,7 +288,7 @@ module VGAController(
 	wire [7:0] ram_test;
 	Wrapper_tb wrapper(
 		.char_buffer_data(char_buffer[curr_index]),
-		.char_buffer_we(cpu_en),
+		.cpu_en(cpu_en),
 		.program_sel(program_select),
 		.shift_amt_data(shiftamt),
 		.read_addr(12'd5500 + readCounter),

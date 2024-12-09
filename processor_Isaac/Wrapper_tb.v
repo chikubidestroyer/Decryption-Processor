@@ -35,7 +35,7 @@
 
 module Wrapper_tb #(parameter FILE = "BF") (
     input wire [7:0] char_buffer_data,
-    input wire char_buffer_we,
+    input wire [1:0] cpu_en,
 	input wire [4:0] shift_amt_data,
 	input wire [1:0] program_sel,
 	input wire [11:0] read_addr,
@@ -156,10 +156,12 @@ module Wrapper_tb #(parameter FILE = "BF") (
 				char_write_counter <= char_write_counter + 1;
 		end
 	end
-
-	assign finalData = char_buffer_we ? {24'b0,char_buffer_data} : memDataIn;
-	assign final_addr = char_buffer_we ? (12'd1500 + char_write_counter) : memAddr[11:0];
-	assign finalWEn = char_buffer_we ? 1'b1 : mwe;
+	localparam CPU_IDLE = 2'b00;
+	localparam CPU_WRITE = 2'b01;
+	localparam CPU_EXEC = 2'b10;
+	assign finalData = (cpu_en == CPU_WRITE) ? {24'b0, char_buffer_data} : (cpu_en == CPU_EXEC) ? memDataIn : 32'b0;
+	assign final_addr = (cpu_en == CPU_WRITE) ? (12'd1500 + char_write_counter) : (cpu_en == CPU_EXEC) ? memAddr[11:0] : read_addr;
+	assign finalWEn = (cpu_en == CPU_WRITE) ? 1'b1 : (cpu_en == CPU_EXEC) ? mew : 1'b0;
 	assign read_ram = finalData[7:0];
 
 	// Processor Memory (RAM)
