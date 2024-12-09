@@ -39,7 +39,8 @@ module Wrapper_tb #(parameter FILE = "BF") (
 	input wire [4:0] shift_amt_data,
 	input wire [1:0] program_sel,
 	input wire [11:0] read_addr,
-	output wire [31:0] read_data
+	output wire [31:0] read_data,
+	output wire [31:0] read_regA
 );
 	// FileData
 	localparam DIR = "Test Files/";
@@ -108,27 +109,36 @@ module Wrapper_tb #(parameter FILE = "BF") (
 		.address_dictmem(DictMemAddress),
 		.q_dictmem(DictMemDataOut)); 
 	
-	// Instruction Memory (ROM)
+	// Instruction Memory (ROM)	
 
-	wire [23:0] program_name;
-	assign program_name = (program_select == 2'b01) ? "FINAL_EN" :
-						(program_select == 2'b10) ? "FINAL_BF" :
-						"BF";
-	ROM #(.MEMFILE({DIR, MEM_DIR, program_name, ".mem"}))
-	InstMem(.clk(clock), 
+	wire[31:0] instData_BF, instData_EN;
+	ROM #(.MEMFILE("Test Files/Memory Files/FINAL_EN.mem"))
+	InstMem_EN(.clk(clock), 
 		.addr(instAddr[11:0]), 
-		.dataOut(instData));
+		.dataOut(instData_EN));
+
+	ROM #(.MEMFILE("Test Files/Memory Files/FINAL_BF.mem"))
+	InstMem_BF(.clk(clock), 
+		.addr(instAddr[11:0]), 
+		.dataOut(instData_BF));
+
+	assign instData = (program_sel == 2'b01) ? instData_EN :
+						(program_sel == 2'b10) ? instData_BF :
+						32'b0;
 	
 	// Register File
 	wire reg6_we = (shift_amt_data != 0); // Write when shift amount changes
+
     wire final_rwe = reg6_we || rwe;
 	wire [4:0] final_rd = reg6_we ? 5'd6 : rd;
 	wire [31:0] final_rData = reg6_we ? {27'b0, shift_amt_data} : rData;
+	wire [4:0] read_6 = 5'd6;
+	assign read_regA = regA;
 
 	regfile RegisterFile(.clock(clock), 
 		.ctrl_writeEnable(final_rwe), .ctrl_reset(reset), 
 		.ctrl_writeReg(final_rd),
-		.ctrl_readRegA(rs1_in), .ctrl_readRegB(rs2), 
+		.ctrl_readRegA(read_6), .ctrl_readRegB(rs2), 
 		.data_writeReg(final_rData), .data_readRegA(regA), .data_readRegB(regB));
 
 	wire [31:0] finalData;

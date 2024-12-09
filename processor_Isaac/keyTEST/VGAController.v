@@ -92,6 +92,7 @@ module VGAController(
 	
 	// Character buffer to store ASCII codes
 	reg [7:0] char_buffer [0:BUFFER_WIDTH*BUFFER_HEIGHT-1];
+	reg [7:0] read_buffer [0:BUFFER_WIDTH*BUFFER_HEIGHT-1];
 	
 	// Calculate position within the current character
 	wire [5:0] x_within_char = x % CHAR_WIDTH;
@@ -235,6 +236,7 @@ module VGAController(
 		
 		if (BTNL && !prev_BTNL) begin  // BTNL pressed
 			program_select <= 2'b01;    // encrypt
+			shiftamt <= 0;
 		end else if (BTNR && !prev_BTNR) begin  // BTNR pressed
 			program_select <= 2'b10;    // decrypt
 		end
@@ -258,7 +260,7 @@ module VGAController(
 			end
 			MEM_READ: begin
 				if(readCounter < 108) begin
-					char_buffer[readCounter] <= mem_read_data[7:0];
+					read_buffer[readCounter] <= mem_read_data[7:0];
 					readCounter <= readCounter + 1;
 				end else begin
 					mem_read_state <= MEM_IDLE;
@@ -266,15 +268,17 @@ module VGAController(
 			end
 		endcase
 	end
-	
+	wire [31:0] reg6test;
 	Wrapper_tb wrapper(
 		.char_buffer_data(char_buffer[char_index]),
 		.char_buffer_we(write_state == DO_WRITE),
 		.program_sel(program_select),
 		.shift_amt_data(shiftamt),
 		.read_addr(12'd5500 + readCounter),
-		.read_data(mem_read_data)
+		.read_data(mem_read_data),
+		.read_regA(reg6test)
 	);
+	assign LED[15:0] = reg6test[15:0];
 	
 
 endmodule
