@@ -285,12 +285,17 @@ module VGAController(
 				end
 			end
 			MEM_WAIT: begin
+
 				read_buffer[readCounter] <= mem_read_data[7:0];
 				readCounter <= readCounter +1;
 				mem_read_state <= MEM_READ;
+
+				
 			end
 		endcase
 	end
+
+
 	reg [6:0] curr_index;
 	always @(posedge clk) begin
 		if(write_state == DO_WRITE && output_ascii != 8'h00) begin
@@ -311,7 +316,8 @@ module VGAController(
 		.LED(LED),
 		.clock(clk625),
 		.reset(reset),
-		.wrstate(write_state)
+		.wrstate(write_state),
+		.curr_index(curr_index)
 	);
 
 		// Sprite lookup address calculation
@@ -330,7 +336,8 @@ module VGAController(
 	//  assign LED[15:14] = cpu_en;
 	//assign LED[7:0] = read_buffer[0];
 	//assign LED[15:8] = read_buffer[1];
-	assign LED[15:14] = write_state;
+	//assign LED[15:8] = read_buffer[0];
+	//assign LED[7:0] = read_buffer[1];
 endmodule
 
 
