@@ -117,6 +117,7 @@ module VGAController(
 	initial begin
 		for (i = 0; i < BUFFER_WIDTH*BUFFER_HEIGHT; i = i + 1) begin
 			char_buffer[i] = 8'h20; // ASCII space
+			read_buffer[i] = 8'h20;
 		end
 	end
 	assign {VGA_R, VGA_G, VGA_B} = colorOut;
@@ -266,6 +267,7 @@ module VGAController(
 	reg [1:0] mem_read_state;
 	localparam MEM_IDLE = 2'b00;
 	localparam MEM_READ = 2'b01;
+	localparam MEM_WAIT = 2'b10;
 
 	always @(posedge clk625) begin
 		case(mem_read_state)
@@ -277,11 +279,15 @@ module VGAController(
 			end
 			MEM_READ: begin
 				if(readCounter < 108) begin
-					read_buffer[readCounter] <= mem_read_data[7:0];
-					readCounter <= readCounter + 1;
+					mem_read_state <= MEM_WAIT;
 				end else begin
 					mem_read_state <= MEM_IDLE;
 				end
+			end
+			MEM_WAIT: begin
+				read_buffer[readCounter] <= mem_read_data[7:0];
+				readCounter <= readCounter +1;
+				mem_read_state <= MEM_READ;
 			end
 		endcase
 	end
@@ -304,7 +310,8 @@ module VGAController(
 		.read_ram(ram_test),
 		.LED(LED),
 		.clock(clk625),
-		.reset()
+		.reset(reset),
+		.wrstate(write_state)
 	);
 
 		// Sprite lookup address calculation
@@ -320,10 +327,10 @@ module VGAController(
 	//assign LED[4:0] = shiftamt;
 	// assign LED[7:0] = char_buffer[curr_index];
 	// assign LED[15] = cpu_done;
-	// assign LED[14] = cpu_en == CPU_EXEC;
+	//  assign LED[15:14] = cpu_en;
 	//assign LED[7:0] = read_buffer[0];
 	//assign LED[15:8] = read_buffer[1];
-	// assign LED[7:0] = mem_read_data[7:0];
+	assign LED[15:14] = write_state;
 endmodule
 
 

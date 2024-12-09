@@ -35,7 +35,8 @@ module Wrapper (
 	output wire [7:0] read_ram,
 	output wire [15:0] LED,
 	input wire clock,
-	input wire reset
+	input wire reset,
+	input wire [1:0] wrstate
 	);
 
 	wire rwe, mwe;
@@ -57,7 +58,7 @@ module Wrapper (
 	// assign LED[15:8] = shift_amt_data;
 	
 	// Main Processing Unit
-	processor CPU(.clock(clock), .reset(cpu_reset), 
+	processor CPU(.clock(clock), .reset(reset), 
 								
 		// ROM
 		.address_imem(instAddr), .q_imem(instData),
@@ -128,25 +129,26 @@ module Wrapper (
 	// Update char_write_counter when writing characters
 	always @(posedge clock) begin
 		if (cpu_en == CPU_WRITE) begin
-			if (char_write_counter < 108) // 108 is buffer size (12*9)
+			if (wrstate == 2'b10 && char_write_counter < 108) // 108 is buffer size (12*9)
 				char_write_counter <= char_write_counter + 1;
 		end
 	end
 
 	assign finalData = (cpu_en == CPU_WRITE) ? {24'b0, char_buffer_data} : (cpu_en == CPU_EXEC) ? memDataIn : 32'b0;
-	assign final_addr = (cpu_en == CPU_WRITE) ? (12'd1500 + char_write_counter) : (cpu_en == CPU_EXEC) ? memAddr[11:0] : read_addr;
+	assign finalAddr = (cpu_en == CPU_WRITE) ? (12'd1500 + char_write_counter) : (cpu_en == CPU_EXEC)? memAddr[11:0] : read_addr;
 	assign finalWEn = (cpu_en == CPU_WRITE) ? 1'b1 : (cpu_en == CPU_EXEC) ? mwe : 1'b0;
 	assign read_ram = finalData[7:0];
 
 	// Processor Memory (RAM)
 	RAM ProcMem(.clk(clock), 
 		.wEn(finalWEn), 
-		.addr(final_addr), 
+		.addr(finalAddr), 
 		.dataIn(finalData), 
 		.dataOut(memDataOut));
 
 	assign read_data = memDataOut;
-	assign LED[11:0] = instAddr[11:0];
+	assign LED[11:0] = read_data[11:0];
+	assign LED[13:12] = program_sel;
 	
 
 endmodule
