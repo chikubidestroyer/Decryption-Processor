@@ -7,7 +7,7 @@
 SETUP_BF_DECRYPT:
     addi $sp, $zero, 1000 # default sp, should initialize in final script
     addi $a0, $zero, 1500 # pointer to original input string
-    addi $a1, $zero, 5500 # pointer to decrypted output string
+    addi $a1, $zero, 3500 # pointer to decrypted output string
     addi $t0, $zero, 0    # current shift amount
     addi $t2, $zero, 0    # max score for a decryption
     addi $t3, $zero, 0    # shift amount for max score for a decryption

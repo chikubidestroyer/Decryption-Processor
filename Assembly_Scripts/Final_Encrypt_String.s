@@ -7,8 +7,8 @@
 #   Encrypted string is stored in the location pointed to by $a1
 Start_Encrypt:
     addi $a0, $zero, 1500
-    addi $a1, $zero, 5500
-    
+    addi $a1, $zero, 3500
+
     addi $r28, $zero, 0
     jal encrypt_string
     addi $r28, $zero, 1
