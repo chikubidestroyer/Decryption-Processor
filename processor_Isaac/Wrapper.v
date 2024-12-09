@@ -146,7 +146,7 @@ module Wrapper (
 		.dataOut(memDataOut));
 
 	assign read_data = memDataOut;
-	assign LED[11:0] = final_addr;
+	assign LED[11:0] = instAddr[11:0];
 	
 
 endmodule

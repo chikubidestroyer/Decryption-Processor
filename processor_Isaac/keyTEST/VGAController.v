@@ -298,7 +298,7 @@ module VGAController(
 		.cpu_en(cpu_en),
 		.program_sel(program_select),
 		.shift_amt_data(shiftamt),
-		.read_addr(12'3000 + readCounter),
+		.read_addr(12'd3500 + readCounter),
 		.read_data(mem_read_data),
 		.read_regA(reg6test),
 		.read_ram(ram_test),
@@ -323,6 +323,7 @@ module VGAController(
 	// assign LED[14] = cpu_en == CPU_EXEC;
 	//assign LED[7:0] = read_buffer[0];
 	//assign LED[15:8] = read_buffer[1];
+	// assign LED[7:0] = mem_read_data[7:0];
 endmodule
 
 
