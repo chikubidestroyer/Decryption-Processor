@@ -218,6 +218,7 @@ module VGAController(
 		.wEn(1'b0));
 
 	reg [1:0] program_select;
+	reg [1:0] cpu_en;
 	reg [4:0] shiftamt;
 	reg prevBTNU, prev_BTNL, prev_BTNR;
 
@@ -229,9 +230,11 @@ module VGAController(
 		if (BTNL && !prev_BTNL) begin  // BTNL pressed
 			program_select <= 2'b01;    // encrypt
 			shiftamt <= 0;              // Reset shift amount
+			cpu_en<=1;
 		end 
 		else if (BTNR && !prev_BTNR) begin  // BTNR pressed
 			program_select <= 2'b10;    // decrypt
+			cpu_en <= 1;
 		end
 		else if (BTNU && !prevBTNU) begin   // BTNU pressed
 			if (shiftamt >= 26) begin
@@ -269,19 +272,29 @@ module VGAController(
 			end
 		endcase
 	end
+	reg [6:0] curr_index;
+	always @(posedge clk) begin
+		if(write_state == DO_WRITE && output_ascii != 8'h00) begin
+			curr_index <= next_write_index;
+		end
+	end
 	wire [31:0] reg6test;
+	wire [7:0] ram_test;
 	Wrapper_tb wrapper(
-		.char_buffer_data(char_buffer[char_index]),
-		.char_buffer_we(write_state == DO_WRITE),
+		.char_buffer_data(char_buffer[curr_index]),
+		.char_buffer_we(cpu_en),
 		.program_sel(program_select),
 		.shift_amt_data(shiftamt),
 		.read_addr(12'd5500 + readCounter),
 		.read_data(mem_read_data),
-		.read_regA(reg6test)
+		.read_regA(reg6test),
+		.read_ram(ram_test)
 	);
-	assign LED[15:0] = reg6test[15:0];
+	//assign LED[15:0] = reg6test[15:0];
+	//assign LED[4:0] = shiftamt;
+	assign LED[7:0] = char_buffer[curr_index];
+	assign LED[14:8] = ram_test;
 	
-
 endmodule
 
 

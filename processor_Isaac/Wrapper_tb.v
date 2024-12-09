@@ -40,7 +40,8 @@ module Wrapper_tb #(parameter FILE = "BF") (
 	input wire [1:0] program_sel,
 	input wire [11:0] read_addr,
 	output wire [31:0] read_data,
-	output wire [31:0] read_regA
+	output wire [31:0] read_regA,
+	output wire [7:0] read_ram
 );
 	// FileData
 	localparam DIR = "Test Files/";
@@ -132,13 +133,14 @@ module Wrapper_tb #(parameter FILE = "BF") (
     wire final_rwe = reg6_we || rwe;
 	wire [4:0] final_rd = reg6_we ? 5'd6 : rd;
 	wire [31:0] final_rData = reg6_we ? {27'b0, shift_amt_data} : rData;
-	wire [4:0] read_6 = 5'd6;
+	wire [4:0] read_6 = 5'd28;
+	wire [4:0] final_read_reg_a_addr = rs1;
 	assign read_regA = regA;
 
 	regfile RegisterFile(.clock(clock), 
 		.ctrl_writeEnable(final_rwe), .ctrl_reset(reset), 
 		.ctrl_writeReg(final_rd),
-		.ctrl_readRegA(read_6), .ctrl_readRegB(rs2), 
+		.ctrl_readRegA(rs1), .ctrl_readRegB(rs2), 
 		.data_writeReg(final_rData), .data_readRegA(regA), .data_readRegB(regB));
 
 	wire [31:0] finalData;
@@ -158,6 +160,7 @@ module Wrapper_tb #(parameter FILE = "BF") (
 	assign finalData = char_buffer_we ? {24'b0,char_buffer_data} : memDataIn;
 	assign final_addr = char_buffer_we ? (12'd1500 + char_write_counter) : memAddr[11:0];
 	assign finalWEn = char_buffer_we ? 1'b1 : mwe;
+	assign read_ram = finalData[7:0];
 
 	// Processor Memory (RAM)
 	RAM ProcMem(.clk(clock), 
