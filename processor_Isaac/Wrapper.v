@@ -150,6 +150,6 @@ module Wrapper (
 	assign read_data = memDataOut;
 	//assign LED[11:0] = read_data[11:0];
 	//assign LED[13:12] = program_sel;
-	assign LED[15:0] = instAddr[15:0];
+	//assign LED[15:0] = instAddr[15:0];
 
 endmodule

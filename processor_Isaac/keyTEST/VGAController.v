@@ -322,7 +322,12 @@ module VGAController(
 
 		// Sprite lookup address calculation
 	wire [17:0] sprite_addr, char_offset;
-	wire [11:0] char_index = (y/50) * BUFFER_WIDTH + (x/50);
+	localparam DIV50_mult = 82;
+	localparam DIV50_shift = 12;
+	wire [11:0] x_div = (x * DIV50_mult) >> DIV50_shift;
+	wire [11:0] y_div = (y * DIV50_mult) >> DIV50_shift;
+
+	wire [11:0] char_index = y_div* BUFFER_WIDTH + x_div;
 	assign char_offset = ({24'b0, buffer_select ? read_buffer[char_index] : char_buffer[char_index]}-8'd33);
 	assign sprite_addr = (char_offset*2500)+(50*y_within_char + x_within_char);
 
@@ -332,7 +337,7 @@ module VGAController(
 	//assign LED[15:0] = reg6test[15:0];
 	//assign LED[4:0] = shiftamt;
 	// assign LED[7:0] = char_buffer[curr_index];
-	// assign LED[15] = cpu_done;
+	assign LED[15] = cpu_done;
 	//  assign LED[15:14] = cpu_en;
 	//assign LED[7:0] = read_buffer[0];
 	//assign LED[15:8] = read_buffer[1];
